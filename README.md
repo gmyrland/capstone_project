@@ -8,6 +8,9 @@ Automotive accidents result in over 30,000 fatalities in the United States annua
 The research question is to identify and quantify factors which impact the survivability of various crash types (Rear-end, Sideswipe, etc) using R, and potentially create a web app using the shiny package to predict survivability for given inputs using regression.
 Techniques will include web-scraping, xml-parsing and data cleaning of real-world dataset, exploratory analysis to identify relevant factors, feature engineering, and linear regression.
 
+## Dataset
+The data using for this project can be found at http://www.nhtsa.gov/NASS, under the link *NASS CDS Case Viewer - XML Viewer (2004-Present)*.
+
 ## Project Structure
 
 ### 01_abstract
@@ -19,14 +22,21 @@ The data review deliverable provides an overview of the data and the approach ta
 
 ### data
 Contains any data produced, including the files with case id information and the individual cases.
-Individual cases are stored as XML in \*.txt files, one case per file, with the filename set to the case id.
+Individual cases are stored in data/cases as XML in \*.txt files, one case per file, with the filename set to the case id.
 Note: Due to the size of the files involved, case data is not shared in the repository.
+However, a sqlite database (db.s3db) with processed data is stored in the data folder and can be used in lieu of re-scraping the case files.
 
 ### doc
 Documentation related to the project, including any written instructions provided.
 
 ### R
 Contains functions to declutter analysis.R.
+
+#### R/databse.R
+Contains functions for caching rectangularized data in sqlite database to unnecessary re-parsing.
+
+#### R/parse.R
+Contains function to parse XML into a single data frame.
 
 #### R/scrape.R
 Contains all scripting related to web-scraping.
