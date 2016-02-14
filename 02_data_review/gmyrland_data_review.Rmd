@@ -1,0 +1,59 @@
+---
+title: 'CKME136 - Data Review for Capstone Project'
+author: "Glen Myrland (500730397)"
+date: '`r Sys.Date()`'
+output: pdf_document
+fontsize: 12pt
+---
+
+# Introduction
+<!--
+    First, provide the context of the problem and then state the problem (your main research question). 
+    Second, write briefly that what are you proposing to solve this problem (don’t write details of the 
+    solution here). (You can use part of your abstract here)
+-->
+
+<!-- Abstract for reference:
+    Automotive accidents result in over 30,000 fatalities in the United States annually. The National Automotive Sampling System (NASS) provides a nationally representative sample of police reported collisions and is made available to researchers and the general public.
+    
+    The research question is to identify and quantify factors which impact the survivability of various crash types (Rear-end, Sideswipe, etc) using R, and potentially create a web app using the shiny package to predict survivability for given inputs using regression.
+    
+    Techniques will include web-scraping, xml-parsing and data cleaning of real-world dataset, exploratory analysis to identify relevant factors, feature engineering, and linear regression.
+-->
+
+# Literature Review
+<!--
+    Write summary of the related papers that you reviewed here.  Write the summary in your own 
+    words—don’t use the technical jargon from the paper that you don’t understand. Keep this section 
+    short—a short paragraph or few sentences about each paper you reviewed should be sufficient.
+-->
+
+# Dataset
+<!--
+    Give the description of the dataset that you are using along with the individual attributes you will or will 
+    not use in your analysis. Also mention the source of the dataset (where did you get it from). In case the 
+    data is curated and created by you please explain the details. Descriptive statistics of the attributes and 
+    datasets can also be provided here.
+-->
+
+# Approach
+<!--
+    Create a block diagram for the steps of your approach to clearly provide an overview. For example, if 
+    you first scrapped twitter, second applied NLP techniques to extract keywords, third labelled the tweets 
+    as positive and negative using a set of keywords, and fourth build a classifier, then you should create a 
+    box for each of the steps with arrows connecting one step to the next one. A sample block diagram is 
+    shown below.
+    Once this is done, explain each of the steps in detail. What are you planning to do in each step or have 
+    already done. For example, in the above case you would create subheadings for each of the steps.  
+-->
+
+## Step 1: Name of the step
+<!--
+    Write details of the step 1. If there is any source code that you’d like to share then provide the link of 
+    the Github.
+-->
+
+## Step 2: Name of the step
+<!--
+    ...
+-->

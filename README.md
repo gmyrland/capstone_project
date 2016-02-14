@@ -14,6 +14,9 @@ Techniques will include web-scraping, xml-parsing and data cleaning of real-worl
 Deliverables are contained on numbered folders.
 The abstract briefly describes the research question and methods that are used.
 
+### 02_data_review
+The data review deliverable provides an overview of the data and the approach taken.
+
 ### doc
 Documentation related to the project, including any written instructions provided.
 
