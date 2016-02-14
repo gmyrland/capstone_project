@@ -17,6 +17,11 @@ The abstract briefly describes the research question and methods that are used.
 ### 02_data_review
 The data review deliverable provides an overview of the data and the approach taken.
 
+### data
+Contains any data produced, including the files with case id information and the individual cases.
+Individual cases are stored as XML in \*.txt files, one case per file, with the filename set to the case id.
+Note: Due to the size of the files involved, case data is not shared in the repository.
+
 ### doc
 Documentation related to the project, including any written instructions provided.
 
