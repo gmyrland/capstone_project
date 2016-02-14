@@ -1,6 +1,8 @@
 # Load Packages
 library(dplyr)
 library(xml2)
+library(DBI)
+library(RSQLite)
 
 ## Ensure working directory is correct
 ## If fails, set working directory to root dir of project, e.g. setwd('~/source/NASS')
@@ -27,3 +29,6 @@ download_all_cases()
 source("R/parse.R")
 df <- parse_xml()
 
+## Cache df to sqlite
+source("R/database.R")
+write_db(df)
