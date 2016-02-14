@@ -3,7 +3,7 @@ library(dplyr)
 
 ## Ensure working directory is correct
 ## If fails, set working directory to root dir of project, e.g. setwd('~/source/NASS')
-expected_dirs <- c("01_abstract", "02_data_review", "data", "data/cases", "doc")
+expected_dirs <- c("01_abstract", "02_data_review", "data", "doc")
 stopifnot(dir.exists(expected_dirs))
 
 ## Useful Functions

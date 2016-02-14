@@ -6,6 +6,7 @@ download_case <- function(case_id) {
     url <- case_url(case_id)
     out <- case_path(case_id)
     if (!file.exists(out)) {
+        if (!dir.exists("data/cases")) dir.create("data/cases")
         download.file(url, out, quiet=TRUE)
         cat("Downloaded: ", case_id, "\n")
         Sys.sleep(as.integer(runif(1,4,20)))
