@@ -21,14 +21,21 @@ get_case_ids  <- function() {
     return(as.character(df[, 9]))
 }
 
+## Control variables. Use for skipping steps.
+do_webscrape <- FALSE
+do_parse <- TRUE
+
 ## Source web-scraping code and scrape any remaining cases to data/cases
 source("R/scrape.R")
-download_all_cases()
+if (do_webscrape)
+    download_all_cases()
 
 ## Parse XML to data frame
 source("R/parse.R")
-df <- parse_xml()
-
-## Cache df to sqlite
 source("R/database.R")
-write_db(df)
+if (do_parse) {
+    df <- parse_xml()   # Parse the XML files
+    write_db(df)        # Cache df to sqlite
+} else {
+    df <- read_db()     # Load cached data
+}
