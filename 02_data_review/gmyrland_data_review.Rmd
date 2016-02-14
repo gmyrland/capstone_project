@@ -1,5 +1,5 @@
 ---
-title: 'CKME136 - Data Review for Capstone Project'
+title: 'Vehicle Crash Survivability'
 author: "Glen Myrland (500730397)"
 date: '`r Sys.Date()`'
 output: pdf_document
