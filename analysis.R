@@ -1,5 +1,6 @@
 # Load Packages
 library(dplyr)
+library(xml2)
 
 ## Ensure working directory is correct
 ## If fails, set working directory to root dir of project, e.g. setwd('~/source/NASS')
@@ -21,4 +22,8 @@ get_case_ids  <- function() {
 ## Source web-scraping code and scrape any remaining cases to data/cases
 source("R/scrape.R")
 download_all_cases()
+
+## Parse XML to data frame
+source("R/parse.R")
+df <- parse_xml()
 
