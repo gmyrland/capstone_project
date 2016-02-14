@@ -67,4 +67,16 @@ Navigating through the result list and selecting all text with `Ctrl+A` allowed 
 The result was then filtered for only unique lines ending containing the regular expression `[0-9]\{9,9}$`, again using [vim](http://www.vim.org).
 The provided the original tabular result data in a tidy, tab-delimited file, with the last field being the case id ([nass_case_ids_filtered.txt](https://github.com/gmyrland/capstone_project/blob/master/data/nass_case_ids_filtered.txt)).
 
-## Step 2: Name of the step
+## Step 2: Scrape case data using Case Ids
+
+Using R, the case data can be scraped from the NASS website and stored locally as raw XML. 
+Two functions perform the web scrape and are located in [R/scrape.R](https://github.com/gmyrland/capstone_project/blob/master/R/scrape.R).
+Given a single case id, `download_case` downloads the case data and saves it as a single text file containing XML with the case id as the name. The function `download_all_cases` uses `download_case` to iteratively download all cases.
+If local data already exists for any case, then the case data is not re-downloaded.
+
+## Step 3: Rectangularize key XML fields
+
+Using the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package in R, key fields in the XML tree can be read and stored to a tidy data frame.
+The `parse_xml` function in [R/parse.R](https://github.com/gmyrland/capstone_project/blob/master/R/parse.R) iterates through the local case data files and produces a single dataframe containing the key fields.
+
+## Step 4:
