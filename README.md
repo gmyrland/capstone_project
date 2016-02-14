@@ -25,3 +25,11 @@ Note: Due to the size of the files involved, case data is not shared in the repo
 ### doc
 Documentation related to the project, including any written instructions provided.
 
+### R
+Contains functions to declutter analysis.R.
+
+#### R/scrape.R
+Contains all scripting related to web-scraping.
+
+### Analysis.R
+The main R source file containing the code for data harvesting and analysis.
