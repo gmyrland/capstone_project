@@ -49,6 +49,36 @@ When a case id is known, it can be used to extract XML data for the specific col
     already done. For example, in the above case you would create subheadings for each of the steps.  
 -->
 
+```{r include=FALSE}
+library(dplyr)
+library(DiagrammeR)
+graph <-
+  create_graph() %>%
+  set_graph_name("Approach") %>%
+  set_global_graph_attr("graph", "overlap", "true") %>%
+  set_global_graph_attr("graph", "fixedsize", "true") %>%
+  set_global_graph_attr("node", "color", "blue") %>%
+  set_global_graph_attr("node", "fontname", "Helvetica") %>%
+  add_node(label="1. Collect Case IDs") %>%
+  add_node(label="2. Web-scraping", from=1) %>%
+  add_node(label="3. Parse XML", from=2) %>%
+  add_node(label="4. Data Cleaning", from=3) %>%
+  add_node(label="5. Exploratory Analysis", from=4) %>%
+  add_node(label="6. Feature Engineering", from=5) %>%
+  add_node(label="7. Regression Analysis", from=6) %>%
+  select_nodes() %>%
+  set_node_attr_with_selection("shape", "box") %>%
+  set_node_attr_with_selection("type", "box") %>%
+  clear_selection %>%
+  select_edges %>%
+  set_edge_attr_with_selection("color", "green") %>%
+  clear_selection
+render_graph(graph)
+## graph produced saved using Rstudio as approach.png
+```
+The approach to be taken is shown in the graph below, and described in the following subsections.
+![graph](approach.png)
+
 ## Step 1: Compile complete list of Case Ids
 <!--
     Write details of the step 1. If there is any source code that you’d like to share then provide the link of 
