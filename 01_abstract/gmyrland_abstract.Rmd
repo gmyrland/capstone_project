@@ -1,0 +1,21 @@
+---
+title: 'CKME136 - Abstract for Capstone Project'
+author: "Glen Myrland (500730397)"
+date: '`2016-01-25`'
+output: pdf_document
+fontsize: 12pt
+---
+
+<!--
+    Abstract (100 words or less)
+    a) brief context about the problem and the theme you have chosen
+    b) problem that you are solving
+    c) the data you are using
+    d) the techniques used and the tools that will be used to solve the problem
+-->
+
+Automotive accidents result in over 30,000 fatalities in the United States annually. The National Automotive Sampling System (NASS) provides a nationally representative sample of police reported collisions and is made available to researchers and the general public.
+
+The research question is to identify and quantify factors which impact the survivability of various crash types (Rear-end, Sideswipe, etc) using R, and potentially create a web app using the shiny package to predict survivability for given inputs using regression.
+
+Techniques will include web-scraping, xml-parsing and data cleaning of real-world dataset, exploratory analysis to identify relevant factors, feature engineering, and linear regression.
