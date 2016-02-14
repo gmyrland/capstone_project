@@ -47,13 +47,24 @@ fontsize: 12pt
     already done. For example, in the above case you would create subheadings for each of the steps.  
 -->
 
-## Step 1: Name of the step
+## Step 1: Compile complete list of Case Ids
 <!--
     Write details of the step 1. If there is any source code that you’d like to share then provide the link of 
     the Github.
 -->
 
+Case data in XML for each collision can be found using a url of the form:\newline http://www-nass.nhtsa.dot.gov/nass/cds/CaseForm.aspx?GetXML&caseid=112007272.
+
+In order to obtain data for each collision, it was necessary to obtain all Case Ids.
+As there was no obvious source for the complete set of ids, and the numerical values of the ids were too sparse for brute force web scraping, a method was devised to quickly pull all ids from the results list of an empty search.
+
+The complete set of results can be found using the link:\newline
+http://www-nass.nhtsa.dot.gov/nass/cds/ListForm.aspx
+
+A Windows application [True X-Mouse Gizmo](http://fy.chalmers.se/~appro/nt/TXMouse/) was used to emulate the Linux behaviour of copying any selected text to the system clipboard.
+A macro in the [vim](http://www.vim.org/) text editor was then used to paste the clipboard contents to a text file at a rate of once per second.
+Navigating through the result list and selecting all text with `Ctrl+A` allowed for quick harvesting of all 49,345 case ids in an unstructured format (found here [nass_case_ids.txt](https://github.com/gmyrland/capstone_project/blob/master/data/nass_case_ids.txt)).
+The result was then filtered for only unique lines ending containing the regular expression `[0-9]\{9,9}$`, again using [vim](http://www.vim.org).
+The provided the original tabular result data in a structured manner, with the last numerical sequence on each line being the case id ([nass_case_ids_filtered.txt](https://github.com/gmyrland/capstone_project/blob/master/data/nass_case_ids_filtered.txt)).
+
 ## Step 2: Name of the step
-<!--
-    ...
--->
