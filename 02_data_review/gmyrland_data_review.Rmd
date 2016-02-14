@@ -3,7 +3,6 @@ title: 'CKME136 - Data Review for Capstone Project'
 author: "Glen Myrland (500730397)"
 date: '`r Sys.Date()`'
 output: pdf_document
-fontsize: 12pt
 ---
 
 # Introduction
@@ -13,13 +12,12 @@ fontsize: 12pt
     solution here). (You can use part of your abstract here)
 -->
 
-<!-- Abstract for reference:
-    Automotive accidents result in over 30,000 fatalities in the United States annually. The National Automotive Sampling System (NASS) provides a nationally representative sample of police reported collisions and is made available to researchers and the general public.
+Automotive accidents result in over 30,000 fatalities in the United States annually.
+The National Automotive Sampling System (NASS) provides a nationally representative sample of police reported collisions and is made available to researchers and the general public.
     
-    The research question is to identify and quantify factors which impact the survivability of various crash types (Rear-end, Sideswipe, etc) using R, and potentially create a web app using the shiny package to predict survivability for given inputs using regression.
+The research question for this project is to identify and quantify factors which impact the survivability of various crash types (Rear-end, Sideswipe, etc) using R, and create a web app using the shiny package to predict survivability for given inputs using regression.
     
-    Techniques will include web-scraping, xml-parsing and data cleaning of real-world dataset, exploratory analysis to identify relevant factors, feature engineering, and linear regression.
--->
+The techniques will include web-scraping the publicly available data on the NASS website, parsing the resultant XML and data cleaning of real-world dataset, exploratory analysis to identify relevant factors, feature engineering, and regression.
 
 # Literature Review
 <!--
@@ -35,6 +33,10 @@ fontsize: 12pt
     data is curated and created by you please explain the details. Descriptive statistics of the attributes and 
     datasets can also be provided here.
 -->
+
+The data used for this project can be found at http://www.nhtsa.gov/NASS. The link *NASS CDS Case Viewer - XML Viewer (2004-Present)* provides a web search of the existing case data.
+When a case id is known, it can be used to extract XML data for the specific collision, allowing for collection of all case data.
+``Information collected in NASS, with all personal identifiers removed, is made available to other researchers and organizations involved in the highway safety effort. They include other Federal agencies; state and local governments; universities; research institutions; the automobile, trucking, and insurance industries; and the general public.'' [[Source]](http://www.nhtsa.gov/DOT/NHTSA/NCSA/Content/PDF/NASSbrochure.pdf)
 
 # Approach
 <!--
