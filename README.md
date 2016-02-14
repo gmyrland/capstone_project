@@ -1,5 +1,5 @@
 Capstone Project
-----------------
+================
 
 This repository contains source code and related documents for my capstone project the Data Analytics, Big Data, and Predictive Analytics certificate program at Ryerson University.
 
