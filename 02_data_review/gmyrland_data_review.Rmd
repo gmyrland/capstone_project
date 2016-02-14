@@ -81,4 +81,22 @@ If local data already exists for any case, then the case data is not re-download
 Using the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package in R, key fields in the XML tree can be read and stored to a tidy data frame.
 The `parse_xml` function in [R/parse.R](https://github.com/gmyrland/capstone_project/blob/master/R/parse.R) iterates through the local case data files and produces a single dataframe containing the key fields.
 
-## Step 4:
+## Step 4: Data Cleaning
+
+The data collected is real world data and will contain many missing values.
+Furthermore, as it has been collected over time, the XML schema has changed yearly.
+Coding and Analytical Manuals for the data are located [here](http://www-nrd.nhtsa.dot.gov/cats/listpublications.aspx?Id=l&ShowBy=DocType), and will be used to reconcile the data to a consistent schema.
+Additionally, missing fields may need to be imputed or have corresponding records removed from the data set.
+
+## Step 5: Exploratory Analysis
+
+Once the data is cleaned, exploratory analysis can take place.
+This will include searching for existing correlations in the data as well as identification of attributes that will likely be useful in the regression analysis.
+
+## Step 6: Feature Engineering
+
+If required, attributes may need to be refactored or engineered to provide better inputs to the regression.
+
+## Step 7: Regression
+
+Finally, a regression will be performed to build a model to predict survivability of collisions given the inputs identified in the previous steps.
