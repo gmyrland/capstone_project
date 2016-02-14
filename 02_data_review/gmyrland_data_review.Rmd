@@ -65,6 +65,6 @@ A Windows application [True X-Mouse Gizmo](http://fy.chalmers.se/~appro/nt/TXMou
 A macro in the [vim](http://www.vim.org/) text editor was then used to paste the clipboard contents to a text file at a rate of once per second.
 Navigating through the result list and selecting all text with `Ctrl+A` allowed for quick harvesting of all 49,345 case ids in an unstructured format (found here [nass_case_ids.txt](https://github.com/gmyrland/capstone_project/blob/master/data/nass_case_ids.txt)).
 The result was then filtered for only unique lines ending containing the regular expression `[0-9]\{9,9}$`, again using [vim](http://www.vim.org).
-The provided the original tabular result data in a structured manner, with the last numerical sequence on each line being the case id ([nass_case_ids_filtered.txt](https://github.com/gmyrland/capstone_project/blob/master/data/nass_case_ids_filtered.txt)).
+The provided the original tabular result data in a tidy, tab-delimited file, with the last field being the case id ([nass_case_ids_filtered.txt](https://github.com/gmyrland/capstone_project/blob/master/data/nass_case_ids_filtered.txt)).
 
 ## Step 2: Name of the step
