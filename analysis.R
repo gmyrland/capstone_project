@@ -18,3 +18,7 @@ get_case_ids  <- function() {
     return(as.character(df[, 9]))
 }
 
+## Source web-scraping code and scrape any remaining cases to data/cases
+source("R/scrape.R")
+download_all_cases()
+
