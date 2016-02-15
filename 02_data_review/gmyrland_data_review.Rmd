@@ -86,7 +86,13 @@ library(RSQLite)
 source("R/database.R")
 df <- read_db()
 library(ggplot2)
-df %>% ggplot(aes(x=config)) + geom_bar(fill="#0047b3") + labs(x = "Configuration", y="Count") + theme_bw() + theme(axis.text.x = element_text(angle = 30, hjust=1))
+df %>%
+    filter(config != '') %>%
+    ggplot(aes(x=config)) +
+        geom_bar(fill="#0047b3") +
+        labs(x = "Configuration", y="Count") +
+        theme_bw() +
+        theme(axis.text.x = element_text(angle = 30, hjust=1))
 setwd(wd)
 ```
 
