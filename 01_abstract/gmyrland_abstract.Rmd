@@ -1,7 +1,7 @@
 ---
 title: 'CKME136 - Abstract for Capstone Project'
 author: "Glen Myrland (500730397)"
-date: '`2016-01-25`'
+date: '2016-01-25'
 output: pdf_document
 fontsize: 12pt
 ---
