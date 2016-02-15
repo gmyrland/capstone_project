@@ -21,6 +21,8 @@ The research question for this project is to identify and quantify factors which
     
 The techniques will include web-scraping the publicly available data on the NASS website, parsing the resultant XML and data cleaning of real-world dataset, exploratory analysis to identify relevant factors, feature engineering, and regression.
 
+The source code for this project is available on github at https://github.com/gmyrland/capstone_project.
+
 **References:**
 
 [1] World Health Organization. (2015). Global status report on road safety 2015. Accessed from\newline http://www.who.int/violence_injury_prevention/road_safety_status/2015/TableA2.pdf?ua=1
