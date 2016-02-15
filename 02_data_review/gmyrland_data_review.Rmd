@@ -120,19 +120,19 @@ graph <-
   set_global_graph_attr("graph", "fixedsize", "true") %>%
   set_global_graph_attr("node", "color", "blue") %>%
   set_global_graph_attr("node", "fontname", "Helvetica") %>%
-  add_node(label="1. Collect Case IDs") %>%
-  add_node(label="2. Web-scraping", from=1) %>%
-  add_node(label="3. Parse XML", from=2) %>%
-  add_node(label="4. Data Cleaning", from=3) %>%
-  add_node(label="5. Exploratory Analysis", from=4) %>%
-  add_node(label="6. Feature Engineering", from=5) %>%
-  add_node(label="7. Regression Analysis", from=6) %>%
+  add_node(label="  1. Collect case ids  ") %>%
+  add_node(label="  2. Web-scraping  ", from=1) %>%
+  add_node(label="  3. Parse XML  ", from=2) %>%
+  add_node(label="  4. Data Cleaning  ", from=3) %>%
+  add_node(label="  5. Exploratory Analysis  ", from=4) %>%
+  add_node(label="  6. Feature Engineering  ", from=5) %>%
+  add_node(label="  7. Regression Analysis  ", from=6) %>%
   select_nodes() %>%  
   set_node_attr_with_selection("shape", "box") %>%
   set_node_attr_with_selection("type", "box") %>%
   clear_selection %>%
   select_edges %>%
-  set_edge_attr_with_selection("color", "green") %>%
+  set_edge_attr_with_selection("color", "black") %>%
   clear_selection
 render_graph(graph)
 ## graph produced saved using RStudio as approach.png
