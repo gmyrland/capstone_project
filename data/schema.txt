@@ -1,0 +1,1522 @@
+#########
+# Legend:
+
+/Case/etc/etc - xpath for xml element
++{n,m} suffix - there are n to m of these elements per case
+() suffix     - contains names of important xml attributes
+-> ...        - element contains child elements that were not mapped
+
+####################
+# Mapping to SQLite:
+
+- Main case data in 'Cases' table
+- Forms mapped to individual tables
+- Elements have same name as xpath in SQLite, but replace '/' with '_'
+- For XML attributes, add '_' and attribute name as suffix
+- Special characters removed (eliminate '+', change '-' to '_')
+- All tables have 'CaseId' to use as a key
+- XML prefix is shortened in SQLite tables according to table below
+
+NAME             XML PREFIX                                     PREFIX IN SQL
+Cases            /Case                                          Case
+Events           /Case/CaseForm/Events                          Event
+Vehicles         /Case/CaseForm/Vehicles/VehicleSum             Vehicle
+Persons          /Case/CaseForm/Persons/Person                  Person
+EMS              /Case/EMSForm/EMSvehicle                       EMS
+GeneralVehicle   /Case/GeneralVehicleForms/GeneralVehicleForm   GeneralVehicle
+Occupants        /Case/OccupantForms/OccupantForm               Occupant
+Safety           /Case/SafetyForms/SafetyForm                   Safety
+VehicleExterior  /Case/VehicleExteriorForms/VehicleExteriorForm VehicleExterior
+VehicleInterior  /Case/VehicleInteriorForms/VehicleInteriorForm VehicleInterior
+
+#############
+# XML Schema:
+
+/Case (noNamespaceSchemaLocation, CaseID, NumOfVehicle, CaseStr, Location, Version, Author, Comment, Origin)
+/Case/CaseForm (caseID)
+/Case/CaseForm/Crash
+/Case/CaseForm/Crash/PSU
+/Case/CaseForm/Crash/CaseNumber
+/Case/CaseForm/Crash/Stratum
+/Case/CaseForm/Crash/Weight
+/Case/CaseForm/Crash/CrashDate
+/Case/CaseForm/Crash/DayOfWeek
+/Case/CaseForm/Crash/CrashTime (UOM)
+/Case/CaseForm/Crash/Status
+/Case/CaseForm/Crash/Month
+/Case/CaseForm/Crash/Year
+/Case/CaseForm/Crash/PSUStrat
+/Case/CaseForm/Crash/SASvariables
+/Case/CaseForm/Crash/SASvariables/SpecifyAccident
+/Case/CaseForm/Crash/SASvariables/SpecifyConfig
+/Case/CaseForm/Crash/SASvariables/VehicleType
+/Case/CaseForm/Crash/SASvariables/ConfigType
+/Case/CaseForm/Crash/SASvariables/VehForms
+/Case/CaseForm/Crash/SASvariables/Events
+/Case/CaseForm/CaseSummary
+/Case/CaseForm/CaseSummary/CrashType
+/Case/CaseForm/CaseSummary/Configuration
+/Case/CaseForm/CaseSummary/Summary
+/Case/CaseForm/Events
+/Case/CaseForm/Events/EventSum+{1,21} (VehicleNumber, EventNumber, StruckVehNumEvent, StrikeVehNumEvent)
+/Case/CaseForm/Events/EventSum/Class
+/Case/CaseForm/Events/EventSum/AreaOfDamage
+/Case/CaseForm/Events/EventSum/Contacted
+/Case/CaseForm/Events/EventSum/ContactedClass
+/Case/CaseForm/Events/EventSum/ContactedAreaOfDamage
+/Case/CaseForm/Vehicles
+/Case/CaseForm/Vehicles/NumberVehicles
+/Case/CaseForm/Vehicles/VehicleSum+{1,13} (VehicleNumber)
+/Case/CaseForm/Vehicles/VehicleSum/Year
+/Case/CaseForm/Vehicles/VehicleSum/Make
+/Case/CaseForm/Vehicles/VehicleSum/Model
+/Case/CaseForm/Vehicles/VehicleSum/DamagePlane
+/Case/CaseForm/Vehicles/VehicleSum/Severity
+/Case/CaseForm/Vehicles/VehicleSum/ComponentFailure+{0,1}
+/Case/CaseForm/Persons
+/Case/CaseForm/Persons/Person+{0,18} (VehicleNumber, OccNumber)
+/Case/CaseForm/Persons/Person/Role
+/Case/CaseForm/Persons/Person/Seat (seatrow, seatloc)
+/Case/CaseForm/Persons/Person/Restraints
+/Case/CaseForm/Persons/Person/AIScodes
+/Case/CaseForm/Persons/Person/MaxSeverity
+/Case/CaseForm/Persons/Person/InjurySource
+/Case/CaseForm/List
+/Case/CaseForm/List/MAXSEVERITY
+/Case/CaseForm/List/FATALQTY
+/Case/CaseForm/List/CHILDSEATQTY
+/Case/CaseForm/List/AIRBAGQTY
+/Case/EMSForm (caseID)
+/Case/EMSForm/EMSvehicle+{0,10} (EMSvehicleNumber, EMSvehID)
+/Case/EMSForm/EMSvehicle/AgencyType
+/Case/EMSForm/EMSvehicle/Agency
+/Case/EMSForm/EMSvehicle/Type
+/Case/EMSForm/EMSvehicle/Mode
+/Case/EMSForm/EMSvehicle/Notified
+/Case/EMSForm/EMSvehicle/Arrived
+/Case/EMSForm/EMSvehicle/Departed
+/Case/EMSForm/EMSvehicle/ArrMedical
+/Case/EMSForm/EMSvehicle/Care
+/Case/EMSForm/EMSvehicle/Care/CareOccupant+{0,19} (vehicleNumber, OccupantNumber) -> ...
+/Case/GeneralVehicleForms (caseID)
+/Case/GeneralVehicleForms/GeneralVehicleForm+{0,12} (caseID, VehicleNumber, VehicleID, CDStype)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/ModelYear
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/Make
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/Model
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/VIN
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/BodyCategory
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/BodyType
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/InTransport
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/TransportStatus
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/VehSpecialUse
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/Inspection
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/InspectionInterval+{0,1}
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/CurbWeight (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/CurbWeightSource
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/CargoWeight (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Vehicle/CargoWeightSource
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/Wheelbase (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/OverallLength (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/MaximumWidth (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/CurbWeight (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/AverageTrack (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/FrontOverhang (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/RearOverhang (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/UndeformedEndWidth (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/EngineCylinders
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/EngineDisplacement (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/ResearcherEstimatedDisposition+{0,1}
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/AssessmentJustification+{0,1}
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/CertifiedAlteredVehicle
+/Case/GeneralVehicleForms/GeneralVehicleForm/Specifications/SuspectedModifications+{0,1}
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/PoliceReport
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/PoliceReport/TowStatus
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/PoliceReport/TravelSpeed (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/PoliceReport/PostedSpeedLimit (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/DriverPresent
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/PARAlcoholPresent
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/AlcoholTest
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/TestResult
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/TestSource
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/PAROtherDrugPresent
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/OtherDrugTestResult
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/ZipCode
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/Race
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/Ethnicity
+/Case/GeneralVehicleForms/GeneralVehicleForm/OfficialRecords/Driver/RaceEthnicOrigin
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Trafficway
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Trafficway/RelationToJunction
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Trafficway/RelationToFlow
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Roadway
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Roadway/TravelLanes
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Roadway/Alignment
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Roadway/Profile
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Roadway/SurfaceType
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Roadway/SurfaceCondition
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Conditions
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Conditions/Light
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/Conditions/Weather
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/TrafficControlDevices
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/TrafficControlDevices/Device
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Environment/TrafficControlDevices/Functioning
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement/PreeventMovement
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement/CriticalPrecrashCat
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement/CriticalPrecrashEvent
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement/AttemptedAvoidanceManeuver
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement/PreimpactStability
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement/PreimpactLocation
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement/CrashType
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Movement/InattentionToDriving
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Distractions
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Distractions/DistractionElement
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Trafficway
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Trafficway/RelationToJunction
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Trafficway/RelationToFlow
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Roadway
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Roadway/TravelLanes
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Roadway/Alignment
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Roadway/Profile
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Roadway/SurfaceType
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Roadway/SurfaceCondition
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Conditions
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Conditions/Light
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/Conditions/Atmosphere
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/TrafficControlDevices
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/TrafficControlDevices/Device
+/Case/GeneralVehicleForms/GeneralVehicleForm/Precrash/TrafficControlDevices/Functioning
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver+{0,1}
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/PreeventMovement
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/CriticalPrecrashCat
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/CriticalPrecrashEvent
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/AttemptedAvoidanceManeuver
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/PreimpactStability
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/PreimpactLocation
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/CrashType (ConfigCatStr)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/InattentionToDriving
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/Distraction
+/Case/GeneralVehicleForms/GeneralVehicleForm/Driver/Distraction/DistractionElement
+/Case/GeneralVehicleForms/GeneralVehicleForm/AOPS+{0,1}
+/Case/GeneralVehicleForms/GeneralVehicleForm/AOPS/IsAnAOPSVehicle
+/Case/GeneralVehicleForms/GeneralVehicleForm/AOPS/AirBagsDeploymentFirstSeatFrontal
+/Case/GeneralVehicleForms/GeneralVehicleForm/AOPS/AigBagsDeploymentOther
+/Case/GeneralVehicleForms/GeneralVehicleForm/AOPS/TypeOfOtherAirBagPresent
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Data
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Data/Type
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Data/QuarterTurns
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/PreRollover+{0,1}
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/PreRollover/Maneuver
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Initiation
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Initiation/Type
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Initiation/Location
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Initiation/ObjectContactedClass
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Initiation/ObjectContacted
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Specifics
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Specifics/InitialLocationFirstForce
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Specifics/InitialDirection
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Measurement+{0,1}
+/Case/GeneralVehicleForms/GeneralVehicleForm/Rollover/Measurement/EstimatedDistance
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction/HeadingAngleForHighestDeltaV
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction/HeadingAngleForHighestDeltaV/ImpactCategory
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction/HeadingAngleForHighestDeltaV/AngleThisVehicle (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction/HeadingAngleForHighestDeltaV/AngleOtherVehicle (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction/ReconstructionData
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction/ReconstructionData/TowedTrailingUnit
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction/ReconstructionData/DocTrajectoryData
+/Case/GeneralVehicleForms/GeneralVehicleForm/Reconstruction/ReconstructionData/PostCollisionCondOfTreePole
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/EventNumber
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/BasisForDeltaV
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/ComputerGeneratedDeltaV
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/ComputerGeneratedDeltaV/Total (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/ComputerGeneratedDeltaV/Longitudinal (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/ComputerGeneratedDeltaV/Lateral (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/ComputerGeneratedDeltaV/ConfidenceLevel
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/ComputerGeneratedDeltaV/EnergyAbsorption (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/ComputerGeneratedDeltaV/ImpactSpeed (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/BarrierEquivalentSpeed (UOM)
+/Case/GeneralVehicleForms/GeneralVehicleForm/DeltaV/Event/EstimatedDeltaV
+/Case/IMGForm (caseID)
+/Case/IMGForm/SceneDrawings -> ...
+/Case/IMGForm/Crashscene -> ...
+/Case/IMGForm/Vehicle -> ...
+/Case/IMGForm/Onscene -> ...
+/Case/IMGForm/Exemplar -> ...
+/Case/IMGForm/Airbag -> ...
+/Case/IMGForm/Diagram -> ...
+/Case/IMGForm/Crashtype -> ...
+/Case/IMGForm/Exteriorvehicle -> ...
+/Case/IMGForm/Injury -> ...
+/Case/OccupantForms (caseID)
+/Case/OccupantForms/OccupantForm+{0,18} (vehicleNumber, OccupantNumber, OccupantID)
+/Case/OccupantForms/OccupantForm/Occupant
+/Case/OccupantForms/OccupantForm/Occupant/Age (UOM)
+/Case/OccupantForms/OccupantForm/Occupant/OccHeight (UOM)
+/Case/OccupantForms/OccupantForm/Occupant/Height (UOM)
+/Case/OccupantForms/OccupantForm/Occupant/Weight (UOM)
+/Case/OccupantForms/OccupantForm/Occupant/Sex
+/Case/OccupantForms/OccupantForm/Occupant/FetalMortality+{0,1}
+/Case/OccupantForms/OccupantForm/Occupant/Role
+/Case/OccupantForms/OccupantForm/Occupant/Race
+/Case/OccupantForms/OccupantForm/Occupant/Ethnicity+{0,1}
+/Case/OccupantForms/OccupantForm/Occupant/EyeWear
+/Case/OccupantForms/OccupantForm/Occupant/ChildSeat
+/Case/OccupantForms/OccupantForm/Occupant/PoliceReportedAirBagAvail-Function
+/Case/OccupantForms/OccupantForm/Occupant/PoliceReportedBeltUse
+/Case/OccupantForms/OccupantForm/Occupant/SeatPosition+{0,1}
+/Case/OccupantForms/OccupantForm/Occupant/SeatPosition/Row
+/Case/OccupantForms/OccupantForm/Occupant/SeatPosition/Location
+/Case/OccupantForms/OccupantForm/Ejection
+/Case/OccupantForms/OccupantForm/Ejection/EjectionObject (EjectionNumber, OccNumber)
+/Case/OccupantForms/OccupantForm/Ejection/EjectionObject/Type
+/Case/OccupantForms/OccupantForm/Ejection/EjectionObject/Area
+/Case/OccupantForms/OccupantForm/Ejection/EjectionObject/Medium
+/Case/OccupantForms/OccupantForm/Ejection/EjectionObject/MediumStatus
+/Case/OccupantForms/OccupantForm/Ejection/EjectionObject/Comment+{0,1}
+/Case/OccupantForms/OccupantForm/Entrapment+{0,1}
+/Case/OccupantForms/OccupantForm/Entrapment/Entrapment
+/Case/OccupantForms/OccupantForm/Entrapment/Mobility
+/Case/OccupantForms/OccupantForm/Entrapment/EntrapmentComments
+/Case/OccupantForms/OccupantForm/Seat+{0,1}
+/Case/OccupantForms/OccupantForm/Seat/SeatGeneral
+/Case/OccupantForms/OccupantForm/Seat/SeatGeneral/Row
+/Case/OccupantForms/OccupantForm/Seat/SeatGeneral/Location
+/Case/OccupantForms/OccupantForm/Seat/SeatGeneral/Posture+{0,1}
+/Case/OccupantForms/OccupantForm/Seat/SeatGeneral/SeatType
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/HeadRestraintType
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/HeadRestraintDamage
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/HeadRestraintActive
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/SeatOrientation
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/TrackPosition
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/SeatPerformance
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/IntegratedRestraints
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/LatchAnchor+{0,1}
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/LatchTether+{0,1}
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/SeatBackPriorInclination
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/SeatBackPostInclination
+/Case/OccupantForms/OccupantForm/Seat/SeatComponents/AirBagAvailable
+/Case/OccupantForms/OccupantForm/Airbag
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject (seatRow, seatLocation, AirbagID, AirbagNum)
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/Location
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/Status
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/Type
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/RedesignClass+{0,1}
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/SystemDeployment
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/IndicationFailure
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/SwitchType
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/SwitchStatus
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Damage
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Damage/FlapsOpen
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Damage/FlapsDamaged
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Damage/AirBagDamaged
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Damage/DamageSource
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Damage/NumberTethers+{0,1}
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Damage/NumberVentPorts+{0,1}
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/VehiclePreviousCrashes
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/PriorMaintenance
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/AirBagEvent
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/CDCDeployment
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/ContactOther+{0,1}
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV+{0,4} (EventNumber)
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/PDOF
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/CDC
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/Total (UOM)
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/Longitudinal (UOM)
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/Lateral (UOM)
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/Energy (UOM)
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/Impact
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/Barrier
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/Estimated
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Evaluation/DeltaV/Rank
+/Case/OccupantForms/OccupantForm/ChildSeat
+/Case/OccupantForms/OccupantForm/SeatBelt
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt+{?}
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Belt
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Belt/Availability
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Belt/UsedInCrash
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Belt/LapBeltPosition
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Belt/ShoulderBeltPosition
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Belt/Malfunction
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Belt/AnchorageAdjustment
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Belt/SourceOfBeltUse
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPretensioner
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPretensioner/Pretensioner
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPretensioner/PretensionerDistance+{0,1}
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPretensioner/LatchPlate
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPretensioner/BeltRetractor
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPretensioner/WasBeltRoutedThroughSafetyGuides+{0,1}
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPositioning
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPositioning/Presence
+/Case/OccupantForms/OccupantForm/SeatBelt/ManualBelt/Components/BeltPositioning/Use
+/Case/OccupantForms/OccupantForm/SeatBelt/AutomaticBelt+{?}
+/Case/OccupantForms/OccupantForm/SeatBelt/AutomaticBelt/AvailabilityFunction
+/Case/OccupantForms/OccupantForm/SeatBelt/AutomaticBelt/UsedInCrash
+/Case/OccupantForms/OccupantForm/SeatBelt/AutomaticBelt/Motorized
+/Case/OccupantForms/OccupantForm/SeatBelt/AutomaticBelt/LapBeltPosition
+/Case/OccupantForms/OccupantForm/SeatBelt/AutomaticBelt/ShoulderBeltPosition
+/Case/OccupantForms/OccupantForm/SeatBelt/AutomaticBelt/Malfunction
+/Case/OccupantForms/OccupantForm/SeatBelt/AutomaticBelt/SourceOfBeltUse
+/Case/OccupantForms/OccupantForm/Injury
+/Case/OccupantForms/OccupantForm/Injury/Treatment
+/Case/OccupantForms/OccupantForm/Injury/Treatment/Mortality
+/Case/OccupantForms/OccupantForm/Injury/Treatment/Treatment
+/Case/OccupantForms/OccupantForm/Injury/Treatment/InitialFacility
+/Case/OccupantForms/OccupantForm/Injury/Treatment/HospitalStay (UOM)
+/Case/OccupantForms/OccupantForm/Injury/Treatment/WorkDaysLost (UOM)
+/Case/OccupantForms/OccupantForm/Injury/Medical
+/Case/OccupantForms/OccupantForm/Injury/Medical/TimeToDeath
+/Case/OccupantForms/OccupantForm/Injury/Medical/NumberOfInjuries
+/Case/OccupantForms/OccupantForm/Injury/Medical/GCS
+/Case/OccupantForms/OccupantForm/Injury/Medical/Blood
+/Case/OccupantForms/OccupantForm/Injury/Medical/Abg+{0,1}
+/Case/OccupantForms/OccupantForm/Injury/Medical/CauseOfDeath
+/Case/OccupantForms/OccupantForm/Injury/Medical/CauseOfDeath/Injury
+/Case/OccupantForms/OccupantForm/Injury/Medical/CauseOfDeath/Injury/Order
+/Case/OccupantForms/OccupantForm/Injury/Medical/CauseOfDeath/Injury/Injury
+/Case/OccupantForms/OccupantForm/InjuryCodes
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode (InjuryNo)
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/AirBagNum
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/SourceOfData
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/AISCode
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/Aspect
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/Aspect/AspectObject
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/Description
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/InjurySource
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/ConfidenceLevel
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/DirectIndirectInjury
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/DirectIntrusion
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/IndirectIntrusion
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/AirBagRelated
+/Case/OccupantForms/OccupantForm/InjuryCodes/Injuries/InjuryCode/Rank
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample/DaysSince
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample/Date
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample/Time
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample/Pulse
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample/Systolic
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample/Diastolic
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample/RespiratoryRate
+/Case/OccupantForms/OccupantForm/InjuryCodes/VitalSigns/VitalSignsSample/Source
+/Case/OccupantForms/OccupantForm/Derived
+/Case/OccupantForms/OccupantForm/Derived/MAIS
+/Case/OccupantForms/OccupantForm/Derived/ISS
+/Case/SafetyForms (caseID)
+/Case/SafetyForms/SafetyForm+{0,7} (VehicleID, VehicleNumber)
+/Case/SafetyForms/SafetyForm/Seat
+/Case/SafetyForms/SafetyForm/Seat/SeatObject
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/Row
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/Location
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/HeadRestraintType+{0,1}
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/HeadRestraintDamage+{0,1}
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/HeadRestraintActive+{0,1}
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/SeatType
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/SeatOrientation
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/TrackPosition
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/SeatPerformance
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/IntegratedRestraints
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/LatchAnchor
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/LatchTether
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/SeatBackPriorInclination
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/SeatBackPostInclination+{0,1}
+/Case/SafetyForms/SafetyForm/Seat/SeatObject/AirbagAvailable
+/Case/SafetyForms/SafetyForm/SeatBelt
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual+{?} (SeatRow, SeatLocation)
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Belt
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Belt/Availability
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Belt/HistoricalUse+{0,1}
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Belt/UsedInCrash
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Belt/Malfunction
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Belt/AnchorageAdjustment
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Components
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Components/Pretensioner
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Components/LatchPlate+{0,1}
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Components/BeltRetractor+{0,1}
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Components/PretensionerDistance+{0,1}
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Components/PositioningDevice
+/Case/SafetyForms/SafetyForm/SeatBelt/Manual/Components/WasBeltRoutedThroughSafetyGuides+{0,1}
+/Case/SafetyForms/SafetyForm/SeatBelt/Automatic+{?}
+/Case/SafetyForms/SafetyForm/SeatBelt/Automatic/AutomaticObject (Position)
+/Case/SafetyForms/SafetyForm/SeatBelt/Automatic/AutomaticObject/UsedInCrash
+/Case/SafetyForms/SafetyForm/SeatBelt/Automatic/AutomaticObject/Motorized
+/Case/SafetyForms/SafetyForm/SeatBelt/Automatic/AutomaticObject/MalfunctionModes
+/Case/SafetyForms/SafetyForm/AirBags
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject+{0,1} (AirbagID, AirbagNum)
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/SeatLocations
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/SeatLocations/SeatLoc (seatRow, seatLocation)
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/AirbagEvent
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/CDCdeployment
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/Location
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/Status
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/Type
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/RedesignClass+{0,1}
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/SystemDeployment
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/IndicationOfFailure
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/SwitchType
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Function/SwitchStatus
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Damage
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Damage/FlapsOpenAtTearPoints
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Damage/FlapsDamaged
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Damage/AirBagDamaged
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Damage/DamageSource
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Damage/NumberTethers+{0,1}
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/Damage/NumberVentPorts+{0,1}
+/Case/SafetyForms/SafetyForm/AirBags/AirbagObject/ContactOtherOccupant+{0,1}
+/Case/SafetyForms/SafetyForm/ChildSeat
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc+{0,1}
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/OccupantNumber
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/Placement
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/ChildPosition
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/Make
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/Model
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/Type
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/MftDate
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/ModelNum
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/DataSource+{0,1}
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/Orientation
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/Harness
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/HarnessUse
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/RetainerClip
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/RetainerClipUse
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/Tether
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/TetherUse
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/Latch
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/LatchUse
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/BeltRoutingUse
+/Case/SafetyForms/SafetyForm/ChildSeat/ChildSeatOcc/LockingClipUse
+/Case/SafetyForms/SafetyForm/ChildSeat/VehicleOcc+{?}
+/Case/SafetyForms/SafetyForm/ChildSeat/VehicleOcc/BeltRetractorType
+/Case/SafetyForms/SafetyForm/ChildSeat/VehicleOcc/LatchPlateType
+/Case/SafetyForms/SafetyForm/ChildSeat/VehicleOcc/LatchAnchor
+/Case/SafetyForms/SafetyForm/ChildSeat/VehicleOcc/LatchTether
+/Case/VehicleExteriorForms (caseID)
+/Case/VehicleExteriorForms/VehicleExteriorForm+{0,8} (caseID, VehicleNumber, VehicleID)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/ModelYear
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/Make
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/Model
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/VIN
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/BodyType
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/InTransport
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/TransportStatus
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/VehSpecialUse
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/Inspection
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/InspectionInterval (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/CurbWeight (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/CurbWeightSource
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/CargoWeight (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Vehicle/CargoWeightSource
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/Wheelbase (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/OverallLength (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/MaximumWidth (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/CurbWeight (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/AverageTrack (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/FrontOverhang (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/RearOverhang (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/UndeformedEndWidth (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/EngineCylinders (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/EngineDisplacement (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/TransmissionType
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/DriveWheels
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/CertifiedAlteredVehicle
+/Case/VehicleExteriorForms/VehicleExteriorForm/Specifications/SuspectedModifications+{0,1}
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fire+{0,1}
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fire/Origin
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fire/Occurrence
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel/FuelElement (FuelNumber)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel/FuelElement/FuelType
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel/FuelElement/TankLocation
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel/FuelElement/TankType
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel/FuelElement/FillerCapLocation
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel/FuelElement/TankPreCrashCondition
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel/FuelElement/TankDamage
+/Case/VehicleExteriorForms/VehicleExteriorForm/Fuel/FuelElement/LeakageLocation
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent (eventNumber, DeformNumber)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/GAD
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/CDCID
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/EventID
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ObjectContactedCategory
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ObjectContacted
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ForceDirection (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/Increment
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ClockDirection
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/OverUnderride
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/HeadingAngle (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/DeformationLocation
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/LongLateral
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/VerticalLateral
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/Distribution
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/Extent
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/Summary
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/SideImpactData+{0,1}
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/SideImpactData/PillarInvolvement
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/SideImpactData/PillarInvolvement/Pillar
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/SideImpactData/SillHeight
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/SideImpactData/DoorSillDiff
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/SideImpactData/CmaxHeight
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/Total (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/Longitudinal (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/Lateral (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/EnergyAbsorption (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/ImpactSpeed (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/BarrierEquivalentSpeed (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/EstimatedDeltaV
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/Rank
+/Case/VehicleExteriorForms/VehicleExteriorForm/CDC/CDCevent/ComputerGeneratedDeltaV/Basis
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject (DeformNumber)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/ProfileNo
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/EventNumber
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/DirectDamageLocation
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/FieldlLocation
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/MaxCrushLocation
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/CDCID
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/EventID
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/CDCNo
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/FieldL (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/FieldLD (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/SMASHL (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/DirectD (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/WidthCDC (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Category
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/LateralMeasurements+{0,1}
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/LateralMeasurements/LateralMeasurement
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/LateralMeasurements/LateralMeasurement/Sign
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/LateralMeasurements/LateralMeasurement/PlaneCategory
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/LateralMeasurements/LateralMeasurement/Max
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/VerticalMeasurements+{0,1}
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/VerticalMeasurements/VerticalMeasurement
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/VerticalMeasurements/VerticalMeasurement/Sign
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/VerticalMeasurements/VerticalMeasurement/PlaneCategory
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/VerticalMeasurements/VerticalMeasurement/Max
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements+{0,1}
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement (SequenceNo)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/Sign
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/PlaneCategory
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/Max (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/C1 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/C2 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/C3 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/C4 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/C5 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/Measurements/Measurement/C6 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/AVG_CMAX (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/AVG_C1 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/AVG_C2 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/AVG_C3 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/AVG_C4 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/AVG_C5 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Crush/CrushObject/AVG_C6 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/Obtained
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile+{?} (EDRID)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Version
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/LampStatus
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/CDC (CDCID, EventSeqNumber)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/DeployStatus
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/IgnitionCycleEvent
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Investigation
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Driver
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Driver/Belt
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Driver/Pretensioner (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Driver/SeatTrackForward
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Passenger
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Passenger/Belt
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Passenger/Seat
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Passenger/Pretensioner (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/EDRgeneralData/Passenger/SeatTrackForward
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/AirbagDeploy
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/AirbagDeploy/AirbagDeployTime
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/AirbagDeploy/AirbagDeployTime/Type
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/AirbagDeploy/AirbagDeployTime/Position
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/AirbagDeploy/AirbagDeployTime/Stage1 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/AirbagDeploy/AirbagDeployTime/Stage2 (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/PreCrash
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/PreCrash/PreCrashData+{??}
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/PreCrash/PreCrashData/Preseconds
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/PreCrash/PreCrashData/Speed (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/PreCrash/PreCrashData/EngineSpeed
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/PreCrash/PreCrashData/Throttle
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/PreCrash/PreCrashData/BrakeSwitchStatus
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash/Longitudinal
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash/Longitudinal/DeltaV
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash/Longitudinal/DeltaV/Time (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash/Longitudinal/DeltaV/DeltaV (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash/Lateral
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash/Lateral/DeltaV
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash/Lateral/DeltaV/Time (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/EDR/EDRfile/Crash/Lateral/DeltaV/DeltaV (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/TransmissionType+{0,1}
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/DriveWheels+{0,1}
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/GVWR (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/GAWRFront (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/GAWRRear (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject/Front
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject/Front/SizeType
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject/Front/Size
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject/Front/ColdPressure (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject/Rear
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject/Rear/SizeType
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject/Rear/Size
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/RecommendedTireSize/RecommendationObject/Rear/ColdPressure (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject+{4*?}
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/Location
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/Manufacturer
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/Model
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/Type
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/Size
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/*[starts-with(name(), 'TIN')]+{0,1} # Literal name is "TIN+"
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/TreadDepth+{0,1} (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/MaxPressure+{0,1} (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/MeasuredPressure (UOM)
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/Restricted
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/Damage
+/Case/VehicleExteriorForms/VehicleExteriorForm/Tire/General/Tires/TireObject/Damage/DamageReason
+/Case/VehicleExteriorForms/VehicleExteriorForm/Sketches -> ...
+/Case/VehicleInteriorForms (caseID)
+/Case/VehicleInteriorForms/VehicleInteriorForm+{0,8} (VehicleID, VehicleNumber)
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity/PassengerCompartmentIntegrityLoss
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity/PassengerCompartmentIntegrityLoss/PassCompIntegrity
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity/PostCrashIntegrityLoss+{0,1}
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity/IntegrityGrid (LocationCode)
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity/IntegrityGrid/IntegrityLocation
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity/IntegrityGrid/IntegrityLocation/Location
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity/IntegrityGrid/IntegrityLocation/Opening
+/Case/VehicleInteriorForms/VehicleInteriorForm/Integrity/IntegrityGrid/IntegrityLocation/Failure
+/Case/VehicleInteriorForms/VehicleInteriorForm/Glazing
+/Case/VehicleInteriorForms/VehicleInteriorForm/Glazing/GlazingLocation+{?} (LocationCode)
+/Case/VehicleInteriorForms/VehicleInteriorForm/Glazing/GlazingLocation/Location
+/Case/VehicleInteriorForms/VehicleInteriorForm/Glazing/GlazingLocation/Type
+/Case/VehicleInteriorForms/VehicleInteriorForm/Glazing/GlazingLocation/PreCrashStatus
+/Case/VehicleInteriorForms/VehicleInteriorForm/Glazing/GlazingLocation/ImpactDamage
+/Case/VehicleInteriorForms/VehicleInteriorForm/Glazing/GlazingLocation/OccupantDamage
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject+{0,1} (IntrusionNumber)
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/Row
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/Position
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/Area
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/IntrudedComponent
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/Comparison
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/Intruded
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/Intrusion
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/Magnitude
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionObject/CrushDirection
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionWidth+{0,1}
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionWidth/RowWidth
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionWidth/RowWidth/Location
+/Case/VehicleInteriorForms/VehicleInteriorForm/Intrusion/IntrusionWidth/RowWidth/Width
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/OdometerReading (UOM)
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/OdometerSource
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/DamageOccupantContact+{0,1}
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/AdjustablePedal
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/KneeBolsterCovering+{0,1}
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/KneeBolsterDeform+{0,1}
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/GloveCompartmentDoor+{0,1}
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/AdaptiveDrivingEquipment
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/AdaptiveEquipment
+/Case/VehicleInteriorForms/VehicleInteriorForm/Instrument/AdaptiveEquipment/AdaptiveEquipmentItem
+/Case/VehicleInteriorForms/VehicleInteriorForm/SteeringWheel
+/Case/VehicleInteriorForms/VehicleInteriorForm/SteeringWheel/ColumnType
+/Case/VehicleInteriorForms/VehicleInteriorForm/SteeringWheel/TiltAdjustment
+/Case/VehicleInteriorForms/VehicleInteriorForm/SteeringWheel/TelescopicAdjustment
+/Case/VehicleInteriorForms/VehicleInteriorForm/SteeringWheel/LocationRimSpokeDeformation
+/Case/VehicleInteriorForms/VehicleInteriorForm/SteeringWheel/RimSpokeDeformation (UOM)
+/Case/VehicleInteriorForms/VehicleInteriorForm/Contact
+/Case/VehicleInteriorForms/VehicleInteriorForm/Contact/ContactArea+{?}
+/Case/VehicleInteriorForms/VehicleInteriorForm/Contact/ContactArea/Contact
+/Case/VehicleInteriorForms/VehicleInteriorForm/Contact/ContactArea/Component
+/Case/VehicleInteriorForms/VehicleInteriorForm/Contact/ContactArea/Evidence
+/Case/VehicleInteriorForms/VehicleInteriorForm/Contact/ContactArea/Occupant
+/Case/VehicleInteriorForms/VehicleInteriorForm/Contact/ContactArea/BodyRegion
+/Case/VehicleInteriorForms/VehicleInteriorForm/Contact/ContactArea/Confidence
+/Case/VehicleInteriorForms/VehicleInteriorForm/Ejection
+/Case/VehicleInteriorForms/VehicleInteriorForm/Ejection/EjectionObject (EjectionNumber, OccNumber)
+/Case/VehicleInteriorForms/VehicleInteriorForm/Ejection/EjectionObject/Type
+/Case/VehicleInteriorForms/VehicleInteriorForm/Ejection/EjectionObject/Area
+/Case/VehicleInteriorForms/VehicleInteriorForm/Ejection/EjectionObject/Medium
+/Case/VehicleInteriorForms/VehicleInteriorForm/Ejection/EjectionObject/MediumStatus
+/Case/VehicleInteriorForms/VehicleInteriorForm/Entrapment
+
+################
+# SQLite SCHEMA:
+
+CASES:
+CaseId
+Case_noNamespaceSchemaLocation
+Case_CaseID
+Case_NumOfVehicle
+Case_CaseStr
+Case_Location
+Case_Version
+Case_Author
+Case_Comment
+Case_Origin
+CaseForm_Crash_PSU
+CaseForm_Crash_CaseNumber
+CaseForm_Crash_Stratum
+CaseForm_Crash_Weight
+CaseForm_Crash_CrashDate
+CaseForm_Crash_DayOfWeek
+CaseForm_Crash_CrashTime
+CaseForm_Crash_CrashTime_UOM
+CaseForm_Crash_Status
+CaseForm_Crash_Month
+CaseForm_Crash_Year
+CaseForm_Crash_PSUStrat
+CaseForm_Crash_SASvariables_SpecifyAccident
+CaseForm_Crash_SASvariables_SpecifyConfig
+CaseForm_Crash_SASvariables_VehicleType
+CaseForm_Crash_SASvariables_ConfigType
+CaseForm_Crash_SASvariables_VehForms
+CaseForm_Crash_SASvariables_Events
+CaseForm_CaseSummary_CrashType
+CaseForm_CaseSummary_Configuration
+CaseForm_CaseSummary_Summary
+CaseForm_Vehicles_NumberVehicles
+CaseForm_List_MAXSEVERITY
+CaseForm_List_FATALQTY
+CaseForm_List_CHILDSEATQTY
+CaseForm_List_AIRBAGQTY
+
+EVENTS:
+CaseId
+Event_VehicleNumber
+Event_EventNumber
+Event_StruckVehNumEvent
+Event_StrikeVehEvent
+Event_Class
+Event_AreaOfDamage
+Event_Contacted
+Event_ContactedClass
+Event_ContactedAreaOfDamage
+
+VEHICLES:
+CaseId
+Vehicle_VehicleNumber
+Vehicle_Year
+Vehicle_Make
+Vehicle_Model
+Vehicle_DamagePlane
+Vehicle_Severity
+Vehicle_ComponentFailure
+
+PERSONS:
+CaseId
+Person_VehicleNumber
+Person_OccNumber
+Person_Role
+Person_Seat
+Person_Restraints
+Person_AIScodes
+Person_MaxSeverity
+Person_InjurySource
+
+EMS:
+CaseId
+EMS_EMSvehicleNumber
+EMS_EMSvehicleNumber
+EMS_AgencyType
+EMS_Agency
+EMS_Type
+EMS_Mode
+EMS_Notified
+EMS_Arrived
+EMS_Departed
+EMS_ArrMedical
+
+GENERALVEHICLE:
+CaseId
+GeneralVehicle_caseID
+GeneralVehicle_VehicleNumber
+GeneralVehicle_VehicleID
+GeneralVehicle_CDStype
+GeneralVehicle_Vehicle_ModelYear
+GeneralVehicle_Vehicle_Make
+GeneralVehicle_Vehicle_Model
+GeneralVehicle_Vehicle_VIN
+GeneralVehicle_Vehicle_BodyCategory
+GeneralVehicle_Vehicle_BodyType
+GeneralVehicle_Vehicle_InTransport
+GeneralVehicle_Vehicle_TransportStatus
+GeneralVehicle_Vehicle_VehSpecialUse
+GeneralVehicle_Vehicle_Inspection
+GeneralVehicle_Vehicle_InspectionInterval
+GeneralVehicle_Vehicle_CurbWeight
+GeneralVehicle_Vehicle_CurbWeight_UOM
+GeneralVehicle_Vehicle_CurbWeightSource
+GeneralVehicle_Vehicle_CargoWeight
+GeneralVehicle_Vehicle_CargoWeight_UOM
+GeneralVehicle_Vehicle_CargoWeightSource
+GeneralVehicle_Specifications_Wheelbase
+GeneralVehicle_Specifications_Wheelbase_UOM
+GeneralVehicle_Specifications_OverallLength
+GeneralVehicle_Specifications_OverallLength_UOM
+GeneralVehicle_Specifications_MaximumWidth
+GeneralVehicle_Specifications_MaximumWidth_UOM
+GeneralVehicle_Specifications_CurbWeight
+GeneralVehicle_Specifications_CurbWeight_UOM
+GeneralVehicle_Specifications_AverageTrack
+GeneralVehicle_Specifications_AverageTrack_UOM
+GeneralVehicle_Specifications_FrontOverhang
+GeneralVehicle_Specifications_FrontOverhang_UOM
+GeneralVehicle_Specifications_RearOverhang
+GeneralVehicle_Specifications_RearOverhang_UOM
+GeneralVehicle_Specifications_UndeformedEndWidth
+GeneralVehicle_Specifications_UndeformedEndWidth_UOM
+GeneralVehicle_Specifications_EngineCylinders
+GeneralVehicle_Specifications_EngineDisplacement
+GeneralVehicle_Specifications_EngineDisplacement_UOM
+GeneralVehicle_Specifications_ResearcherEstimatedDisposition
+GeneralVehicle_Specifications_AssessmentJustification
+GeneralVehicle_Specifications_CertifiedAlteredVehicle
+GeneralVehicle_Specifications_SuspectedModifications
+GeneralVehicle_OfficialRecords_PoliceReport_TowStatus
+GeneralVehicle_OfficialRecords_PoliceReport_TravelSpeed
+GeneralVehicle_OfficialRecords_PoliceReport_TravelSpeed_UOM
+GeneralVehicle_OfficialRecords_PoliceReport_PostedSpeedLimit
+GeneralVehicle_OfficialRecords_PoliceReport_PostedSpeedLimit_UOM
+GeneralVehicle_OfficialRecords_Driver_DriverPresent
+GeneralVehicle_OfficialRecords_Driver_PARAlcoholPresent
+GeneralVehicle_OfficialRecords_Driver_AlcoholTest
+GeneralVehicle_OfficialRecords_Driver_TestResult
+GeneralVehicle_OfficialRecords_Driver_TestSource
+GeneralVehicle_OfficialRecords_Driver_PAROtherDrugPresent
+GeneralVehicle_OfficialRecords_Driver_OtherDrugTestResult
+GeneralVehicle_OfficialRecords_Driver_ZipCode
+GeneralVehicle_OfficialRecords_Driver_Race
+GeneralVehicle_OfficialRecords_Driver_Ethnicity
+GeneralVehicle_OfficialRecords_Driver_RaceEthnicOrigin
+GeneralVehicle_Precrash_Environment_Trafficway_RelationToJunction
+GeneralVehicle_Precrash_Environment_Trafficway_RelationToFlow
+GeneralVehicle_Precrash_Environment_Roadway_TravelLanes
+GeneralVehicle_Precrash_Environment_Roadway_Alignment
+GeneralVehicle_Precrash_Environment_Roadway_Profile
+GeneralVehicle_Precrash_Environment_Roadway_SurfaceType
+GeneralVehicle_Precrash_Environment_Roadway_SurfaceCondition
+GeneralVehicle_Precrash_Environment_Conditions_Light
+GeneralVehicle_Precrash_Environment_Conditions_Weather
+GeneralVehicle_Precrash_Environment_TrafficControlDevices_Device
+GeneralVehicle_Precrash_Environment_TrafficControlDevices_Functioning
+GeneralVehicle_Precrash_Movement_PreeventMovement
+GeneralVehicle_Precrash_Movement_CriticalPrecrashCat
+GeneralVehicle_Precrash_Movement_CriticalPrecrashEvent
+GeneralVehicle_Precrash_Movement_AttemptedAvoidanceManeuver
+GeneralVehicle_Precrash_Movement_PreimpactStability
+GeneralVehicle_Precrash_Movement_PreimpactLocation
+GeneralVehicle_Precrash_Movement_CrashType
+GeneralVehicle_Precrash_Movement_InattentionToDriving
+GeneralVehicle_Precrash_Distractions_DistractionElement
+GeneralVehicle_Precrash_Trafficway_RelationToJunction
+GeneralVehicle_Precrash_Trafficway_RelationToFlow
+GeneralVehicle_Precrash_Roadway_TravelLanes
+GeneralVehicle_Precrash_Roadway_Alignment
+GeneralVehicle_Precrash_Roadway_Profile
+GeneralVehicle_Precrash_Roadway_SurfaceType
+GeneralVehicle_Precrash_Roadway_SurfaceCondition
+GeneralVehicle_Precrash_Conditions_Light
+GeneralVehicle_Precrash_Conditions_Atmosphere
+GeneralVehicle_Precrash_TrafficControlDevices_Device
+GeneralVehicle_Precrash_TrafficControlDevices_Functioning
+GeneralVehicle_Driver_PreeventMovement
+GeneralVehicle_Driver_CriticalPrecrashCat
+GeneralVehicle_Driver_CriticalPrecrashEvent
+GeneralVehicle_Driver_AttemptedAvoidanceManeuver
+GeneralVehicle_Driver_PreimpactStability
+GeneralVehicle_Driver_PreimpactLocation
+GeneralVehicle_Driver_CrashType
+GeneralVehicle_Driver_CrashType_ConfigCatStr
+GeneralVehicle_Driver_InattentionToDriving
+GeneralVehicle_Driver_Distraction_DistractionElement
+GeneralVehicle_AOPS_IsAnAOPSVehicle
+GeneralVehicle_AOPS_AirBagsDeploymentFirstSeatFrontal
+GeneralVehicle_AOPS_AigBagsDeploymentOther
+GeneralVehicle_AOPS_TypeOfOtherAirBagPresent
+GeneralVehicle_Rollover_Data_Type
+GeneralVehicle_Rollover_Data_QuarterTurns
+GeneralVehicle_Rollover_PreRollover_Maneuver
+GeneralVehicle_Rollover_Initiation_Type
+GeneralVehicle_Rollover_Initiation_Location
+GeneralVehicle_Rollover_Initiation_ObjectContactedClass
+GeneralVehicle_Rollover_Initiation_ObjectContacted
+GeneralVehicle_Rollover_Specifics_InitialLocationFirstForce
+GeneralVehicle_Rollover_Specifics_InitialDirection
+GeneralVehicle_Rollover_Measurement_EstimatedDistance
+GeneralVehicle_Reconstruction_HeadingAngleForHighestDeltaV
+GeneralVehicle_Reconstruction_HeadingAngleForHighestDeltaV_ImpactCategory
+GeneralVehicle_Reconstruction_HeadingAngleForHighestDeltaV_AngleThisVehicle
+GeneralVehicle_Reconstruction_HeadingAngleForHighestDeltaV_AngleThisVehicle_UOM
+GeneralVehicle_Reconstruction_HeadingAngleForHighestDeltaV_AngleOtherVehicle
+GeneralVehicle_Reconstruction_HeadingAngleForHighestDeltaV_AngleOtherVehicle_UOM
+GeneralVehicle_Reconstruction_ReconstructionData_TowedTrailingUnit
+GeneralVehicle_Reconstruction_ReconstructionData_DocTrajectoryData
+GeneralVehicle_Reconstruction_ReconstructionData_PostCollisionCondOfTreePole
+GeneralVehicle_DeltaV_Event_EventNumber
+GeneralVehicle_DeltaV_Event_BasisForDeltaV
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_Total
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_Total_UOM
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_Longitudinal
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_Longitudinal_UOM
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_Lateral
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_Lateral_UOM
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_ConfidenceLevel
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_EnergyAbsorption
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_EnergyAbsorption_UOM
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_ImpactSpeed
+GeneralVehicle_DeltaV_Event_ComputerGeneratedDeltaV_ImpactSpeed_UOM
+GeneralVehicle_DeltaV_Event_BarrierEquivalentSpeed
+GeneralVehicle_DeltaV_Event_BarrierEquivalentSpeed_UOM
+GeneralVehicle_DeltaV_Event_EstimatedDeltaV
+
+OCCUPANTS:
+CaseId
+Occupant_vehicleNumber
+Occupant_OccupantNumber
+Occupant_OccupantID
+Occupant_Occupant_Age
+Occupant_Occupant_Age_UOM
+Occupant_Occupant_OccHeight
+Occupant_Occupant_OccHeight_UOM
+Occupant_Occupant_Height
+Occupant_Occupant_Height_UOM
+Occupant_Occupant_Weight
+Occupant_Occupant_Weight_UOM
+Occupant_Occupant_Sex
+Occupant_Occupant_FetalMortality
+Occupant_Occupant_Role
+Occupant_Occupant_Race
+Occupant_Occupant_Ethnicity
+Occupant_Occupant_EyeWear
+Occupant_Occupant_ChildSeat
+Occupant_Occupant_PoliceReportedAirBagAvail_Function
+Occupant_Occupant_PoliceReportedBeltUse
+Occupant_Occupant_SeatPosition_Row
+Occupant_Occupant_SeatPosition_Location
+Occupant_Ejection_EjectionObject
+Occupant_Ejection_EjectionObject_EjectionNumber
+Occupant_Ejection_EjectionObject_OccNumber
+Occupant_Ejection_EjectionObject_Type
+Occupant_Ejection_EjectionObject_Area
+Occupant_Ejection_EjectionObject_Medium
+Occupant_Ejection_EjectionObject_MediumStatus
+Occupant_Ejection_EjectionObject_Comment
+Occupant_Entrapment_Entrapment
+Occupant_Entrapment_Mobility
+Occupant_Entrapment_EntrapmentComments
+Occupant_Seat_SeatGeneral_Row
+Occupant_Seat_SeatGeneral_Location
+Occupant_Seat_SeatGeneral_Posture
+Occupant_Seat_SeatGeneral_SeatType
+Occupant_Seat_SeatComponents_HeadRestraintType
+Occupant_Seat_SeatComponents_HeadRestraintDamage
+Occupant_Seat_SeatComponents_HeadRestraintActive
+Occupant_Seat_SeatComponents_SeatOrientation
+Occupant_Seat_SeatComponents_TrackPosition
+Occupant_Seat_SeatComponents_SeatPerformance
+Occupant_Seat_SeatComponents_IntegratedRestraints
+Occupant_Seat_SeatComponents_LatchAnchor
+Occupant_Seat_SeatComponents_LatchTether
+Occupant_Seat_SeatComponents_SeatBackPriorInclination
+Occupant_Seat_SeatComponents_SeatBackPostInclination
+Occupant_Seat_SeatComponents_AirBagAvailable
+Occupant_Airbag_AirbagObject
+Occupant_Airbag_AirbagObject_seatRow
+Occupant_Airbag_AirbagObject_seatLocation
+Occupant_Airbag_AirbagObject_AirbagID
+Occupant_Airbag_AirbagObject_AirbagNum
+Occupant_Airbag_AirbagObject_Function_Location
+Occupant_Airbag_AirbagObject_Function_Status
+Occupant_Airbag_AirbagObject_Function_Type
+Occupant_Airbag_AirbagObject_Function_RedesignClass
+Occupant_Airbag_AirbagObject_Function_SystemDeployment
+Occupant_Airbag_AirbagObject_Function_IndicationFailure
+Occupant_Airbag_AirbagObject_Function_SwitchType
+Occupant_Airbag_AirbagObject_Function_SwitchStatus
+Occupant_Airbag_AirbagObject_Damage_FlapsOpen
+Occupant_Airbag_AirbagObject_Damage_FlapsDamaged
+Occupant_Airbag_AirbagObject_Damage_AirBagDamaged
+Occupant_Airbag_AirbagObject_Damage_DamageSource
+Occupant_Airbag_AirbagObject_Damage_NumberTethers
+Occupant_Airbag_AirbagObject_Damage_NumberVentPorts
+Occupant_Airbag_AirbagObject_Evaluation_VehiclePreviousCrashes
+Occupant_Airbag_AirbagObject_Evaluation_PriorMaintenance
+Occupant_Airbag_AirbagObject_Evaluation_AirBagEvent
+Occupant_Airbag_AirbagObject_Evaluation_CDCDeployment
+Occupant_Airbag_AirbagObject_Evaluation_ContactOther
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_EventNumber
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_PDOF
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_CDC
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Total
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Total_UOM
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Longitudinal
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Longitudinal_UOM
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Lateral
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Lateral_UOM
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Energy
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Energy_UOM
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Impact
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Barrier
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Estimated
+Occupant_Airbag_AirbagObject_Evaluation_DeltaV_Rank
+Occupant_ChildSeat
+Occupant_SeatBelt_ManualBelt_Belt_Availability
+Occupant_SeatBelt_ManualBelt_Belt_UsedInCrash
+Occupant_SeatBelt_ManualBelt_Belt_LapBeltPosition
+Occupant_SeatBelt_ManualBelt_Belt_ShoulderBeltPosition
+Occupant_SeatBelt_ManualBelt_Belt_Malfunction
+Occupant_SeatBelt_ManualBelt_Belt_AnchorageAdjustment
+Occupant_SeatBelt_ManualBelt_Belt_SourceOfBeltUse
+Occupant_SeatBelt_ManualBelt_Components_BeltPretensioner_Pretensioner
+Occupant_SeatBelt_ManualBelt_Components_BeltPretensioner_PretensionerDistance
+Occupant_SeatBelt_ManualBelt_Components_BeltPretensioner_LatchPlate
+Occupant_SeatBelt_ManualBelt_Components_BeltPretensioner_BeltRetractor
+Occupant_SeatBelt_ManualBelt_Components_BeltPretensioner_WasBeltRoutedThroughSafetyGuides
+Occupant_SeatBelt_ManualBelt_Components_BeltPositioning_Presence
+Occupant_SeatBelt_ManualBelt_Components_BeltPositioning_Use
+Occupant_SeatBelt_AutomaticBelt_AvailabilityFunction
+Occupant_SeatBelt_AutomaticBelt_UsedInCrash
+Occupant_SeatBelt_AutomaticBelt_Motorized
+Occupant_SeatBelt_AutomaticBelt_LapBeltPosition
+Occupant_SeatBelt_AutomaticBelt_ShoulderBeltPosition
+Occupant_SeatBelt_AutomaticBelt_Malfunction
+Occupant_SeatBelt_AutomaticBelt_SourceOfBeltUse
+Occupant_Injury_Treatment_Mortality
+Occupant_Injury_Treatment_Treatment
+Occupant_Injury_Treatment_InitialFacility
+Occupant_Injury_Treatment_HospitalStay
+Occupant_Injury_Treatment_HospitalStay_UOM
+Occupant_Injury_Treatment_WorkDaysLost
+Occupant_Injury_Treatment_WorkDaysLost_UOM
+Occupant_Injury_Medical_TimeToDeath
+Occupant_Injury_Medical_NumberOfInjuries
+Occupant_Injury_Medical_GCS
+Occupant_Injury_Medical_Blood
+Occupant_Injury_Medical_Abg
+Occupant_Injury_Medical_CauseOfDeath_Injury_Order
+Occupant_Injury_Medical_CauseOfDeath_Injury_Injury
+Occupant_InjuryCodes_Injuries_InjuryCode
+Occupant_InjuryCodes_Injuries_InjuryCode_InjuryNo
+Occupant_InjuryCodes_Injuries_InjuryCode_AirBagNum
+Occupant_InjuryCodes_Injuries_InjuryCode_SourceOfData
+Occupant_InjuryCodes_Injuries_InjuryCode_AISCode
+Occupant_InjuryCodes_Injuries_InjuryCode_Aspect_AspectObject
+Occupant_InjuryCodes_Injuries_InjuryCode_Description
+Occupant_InjuryCodes_Injuries_InjuryCode_InjurySource
+Occupant_InjuryCodes_Injuries_InjuryCode_ConfidenceLevel
+Occupant_InjuryCodes_Injuries_InjuryCode_DirectIndirectInjury
+Occupant_InjuryCodes_Injuries_InjuryCode_DirectIntrusion
+Occupant_InjuryCodes_Injuries_InjuryCode_IndirectIntrusion
+Occupant_InjuryCodes_Injuries_InjuryCode_AirBagRelated
+Occupant_InjuryCodes_Injuries_InjuryCode_Rank
+Occupant_InjuryCodes_VitalSigns_VitalSignsSample_DaysSince
+Occupant_InjuryCodes_VitalSigns_VitalSignsSample_Date
+Occupant_InjuryCodes_VitalSigns_VitalSignsSample_Time
+Occupant_InjuryCodes_VitalSigns_VitalSignsSample_Pulse
+Occupant_InjuryCodes_VitalSigns_VitalSignsSample_Systolic
+Occupant_InjuryCodes_VitalSigns_VitalSignsSample_Diastolic
+Occupant_InjuryCodes_VitalSigns_VitalSignsSample_RespiratoryRate
+Occupant_InjuryCodes_VitalSigns_VitalSignsSample_Source
+Occupant_Derived_MAIS
+Occupant_Derived_ISS
+
+SAFETY:
+CaseId
+Safety_VehicleID
+Safety_VehicleNumber
+Safety_Seat_SeatObject_Row
+Safety_Seat_SeatObject_Location
+Safety_Seat_SeatObject_HeadRestraintType
+Safety_Seat_SeatObject_HeadRestraintDamage
+Safety_Seat_SeatObject_HeadRestraintActive
+Safety_Seat_SeatObject_SeatType
+Safety_Seat_SeatObject_SeatOrientation
+Safety_Seat_SeatObject_TrackPosition
+Safety_Seat_SeatObject_SeatPerformance
+Safety_Seat_SeatObject_IntegratedRestraints
+Safety_Seat_SeatObject_LatchAnchor
+Safety_Seat_SeatObject_LatchTether
+Safety_Seat_SeatObject_SeatBackPriorInclination
+Safety_Seat_SeatObject_SeatBackPostInclination
+Safety_Seat_SeatObject_AirbagAvailable
+Safety_SeatBelt_Manual
+Safety_SeatBelt_Manual_SeatRow
+Safety_SeatBelt_Manual_SeatLocation
+Safety_SeatBelt_Manual_Belt_Availability
+Safety_SeatBelt_Manual_Belt_HistoricalUse
+Safety_SeatBelt_Manual_Belt_UsedInCrash
+Safety_SeatBelt_Manual_Belt_Malfunction
+Safety_SeatBelt_Manual_Belt_AnchorageAdjustment
+Safety_SeatBelt_Manual_Components_Pretensioner
+Safety_SeatBelt_Manual_Components_LatchPlate
+Safety_SeatBelt_Manual_Components_BeltRetractor
+Safety_SeatBelt_Manual_Components_PretensionerDistance
+Safety_SeatBelt_Manual_Components_PositioningDevice
+Safety_SeatBelt_Manual_Components_WasBeltRoutedThroughSafetyGuides
+Safety_SeatBelt_Automatic_AutomaticObject
+Safety_SeatBelt_Automatic_AutomaticObject_Position
+Safety_SeatBelt_Automatic_AutomaticObject_UsedInCrash
+Safety_SeatBelt_Automatic_AutomaticObject_Motorized
+Safety_SeatBelt_Automatic_AutomaticObject_MalfunctionModes
+Safety_AirBags_AirbagObject
+Safety_AirBags_AirbagObject_AirbagID
+Safety_AirBags_AirbagObject_AirbagNum
+Safety_AirBags_AirbagObject_Function_SeatLocations_SeatLoc
+Safety_AirBags_AirbagObject_Function_SeatLocations_SeatLoc_seatRow
+Safety_AirBags_AirbagObject_Function_SeatLocations_SeatLoc_seatLocation
+Safety_AirBags_AirbagObject_Function_AirbagEvent
+Safety_AirBags_AirbagObject_Function_CDCdeployment
+Safety_AirBags_AirbagObject_Function_Location
+Safety_AirBags_AirbagObject_Function_Status
+Safety_AirBags_AirbagObject_Function_Type
+Safety_AirBags_AirbagObject_Function_RedesignClass
+Safety_AirBags_AirbagObject_Function_SystemDeployment
+Safety_AirBags_AirbagObject_Function_IndicationOfFailure
+Safety_AirBags_AirbagObject_Function_SwitchType
+Safety_AirBags_AirbagObject_Function_SwitchStatus
+Safety_AirBags_AirbagObject_Damage_FlapsOpenAtTearPoints
+Safety_AirBags_AirbagObject_Damage_FlapsDamaged
+Safety_AirBags_AirbagObject_Damage_AirBagDamaged
+Safety_AirBags_AirbagObject_Damage_DamageSource
+Safety_AirBags_AirbagObject_Damage_NumberTethers
+Safety_AirBags_AirbagObject_Damage_NumberVentPorts
+Safety_AirBags_AirbagObject_ContactOtherOccupant
+Safety_ChildSeat_ChildSeatOcc_OccupantNumber
+Safety_ChildSeat_ChildSeatOcc_Placement
+Safety_ChildSeat_ChildSeatOcc_ChildPosition
+Safety_ChildSeat_ChildSeatOcc_Make
+Safety_ChildSeat_ChildSeatOcc_Model
+Safety_ChildSeat_ChildSeatOcc_Type
+Safety_ChildSeat_ChildSeatOcc_MftDate
+Safety_ChildSeat_ChildSeatOcc_ModelNum
+Safety_ChildSeat_ChildSeatOcc_DataSource
+Safety_ChildSeat_ChildSeatOcc_Orientation
+Safety_ChildSeat_ChildSeatOcc_Harness
+Safety_ChildSeat_ChildSeatOcc_HarnessUse
+Safety_ChildSeat_ChildSeatOcc_RetainerClip
+Safety_ChildSeat_ChildSeatOcc_RetainerClipUse
+Safety_ChildSeat_ChildSeatOcc_Tether
+Safety_ChildSeat_ChildSeatOcc_TetherUse
+Safety_ChildSeat_ChildSeatOcc_Latch
+Safety_ChildSeat_ChildSeatOcc_LatchUse
+Safety_ChildSeat_ChildSeatOcc_BeltRoutingUse
+Safety_ChildSeat_ChildSeatOcc_LockingClipUse
+Safety_ChildSeat_VehicleOcc_BeltRetractorType
+Safety_ChildSeat_VehicleOcc_LatchPlateType
+Safety_ChildSeat_VehicleOcc_LatchAnchor
+Safety_ChildSeat_VehicleOcc_LatchTether
+
+VEHICLEEXTERIOR:
+CaseId
+VehicleExterior_VehicleNumber
+VehicleExterior_VehicleID
+VehicleExterior_Vehicle_ModelYear
+VehicleExterior_Vehicle_Make
+VehicleExterior_Vehicle_Model
+VehicleExterior_Vehicle_VIN
+VehicleExterior_Vehicle_BodyType
+VehicleExterior_Vehicle_InTransport
+VehicleExterior_Vehicle_TransportStatus
+VehicleExterior_Vehicle_VehSpecialUse
+VehicleExterior_Vehicle_Inspection
+VehicleExterior_Vehicle_InspectionInterval
+VehicleExterior_Vehicle_InspectionInterval_UOM
+VehicleExterior_Vehicle_CurbWeight
+VehicleExterior_Vehicle_CurbWeight_UOM
+VehicleExterior_Vehicle_CurbWeightSource
+VehicleExterior_Vehicle_CargoWeight
+VehicleExterior_Vehicle_CargoWeight_UOM
+VehicleExterior_Vehicle_CargoWeightSource
+VehicleExterior_Specifications_Wheelbase
+VehicleExterior_Specifications_Wheelbase_UOM
+VehicleExterior_Specifications_OverallLength
+VehicleExterior_Specifications_OverallLength_UOM
+VehicleExterior_Specifications_MaximumWidth
+VehicleExterior_Specifications_MaximumWidth_UOM
+VehicleExterior_Specifications_CurbWeight
+VehicleExterior_Specifications_CurbWeight_UOM
+VehicleExterior_Specifications_AverageTrack
+VehicleExterior_Specifications_AverageTrack_UOM
+VehicleExterior_Specifications_FrontOverhang
+VehicleExterior_Specifications_FrontOverhang_UOM
+VehicleExterior_Specifications_RearOverhang
+VehicleExterior_Specifications_RearOverhang_UOM
+VehicleExterior_Specifications_UndeformedEndWidth
+VehicleExterior_Specifications_UndeformedEndWidth_UOM
+VehicleExterior_Specifications_EngineCylinders
+VehicleExterior_Specifications_EngineCylinders_UOM
+VehicleExterior_Specifications_EngineDisplacement
+VehicleExterior_Specifications_EngineDisplacement_UOM
+VehicleExterior_Specifications_TransmissionType
+VehicleExterior_Specifications_DriveWheels
+VehicleExterior_Specifications_CertifiedAlteredVehicle
+VehicleExterior_Specifications_SuspectedModifications
+VehicleExterior_Fire_Origin
+VehicleExterior_Fire_Occurrence
+VehicleExterior_Fuel_FuelElement
+VehicleExterior_Fuel_FuelElement_FuelNumber
+VehicleExterior_Fuel_FuelElement_FuelType
+VehicleExterior_Fuel_FuelElement_TankLocation
+VehicleExterior_Fuel_FuelElement_TankType
+VehicleExterior_Fuel_FuelElement_FillerCapLocation
+VehicleExterior_Fuel_FuelElement_TankPreCrashCondition
+VehicleExterior_Fuel_FuelElement_TankDamage
+VehicleExterior_Fuel_FuelElement_LeakageLocation
+VehicleExterior_CDC_CDCevent
+VehicleExterior_CDC_CDCevent_eventNumber
+VehicleExterior_CDC_CDCevent_DeformNumber
+VehicleExterior_CDC_CDCevent_GAD
+VehicleExterior_CDC_CDCevent_CDCID
+VehicleExterior_CDC_CDCevent_EventID
+VehicleExterior_CDC_CDCevent_ObjectContactedCategory
+VehicleExterior_CDC_CDCevent_ObjectContacted
+VehicleExterior_CDC_CDCevent_ForceDirection
+VehicleExterior_CDC_CDCevent_ForceDirection_UOM
+VehicleExterior_CDC_CDCevent_Increment
+VehicleExterior_CDC_CDCevent_ClockDirection
+VehicleExterior_CDC_CDCevent_OverUnderride
+VehicleExterior_CDC_CDCevent_HeadingAngle
+VehicleExterior_CDC_CDCevent_HeadingAngle_UOM
+VehicleExterior_CDC_CDCevent_DeformationLocation
+VehicleExterior_CDC_CDCevent_LongLateral
+VehicleExterior_CDC_CDCevent_VerticalLateral
+VehicleExterior_CDC_CDCevent_Distribution
+VehicleExterior_CDC_CDCevent_Extent
+VehicleExterior_CDC_CDCevent_Summary
+VehicleExterior_CDC_CDCevent_SideImpactData_PillarInvolvement_Pillar
+VehicleExterior_CDC_CDCevent_SideImpactData_SillHeight
+VehicleExterior_CDC_CDCevent_SideImpactData_DoorSillDiff
+VehicleExterior_CDC_CDCevent_SideImpactData_CmaxHeight
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_Total
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_Total_UOM
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_Longitudinal
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_Longitudinal_UOM
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_Lateral
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_Lateral_UOM
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_EnergyAbsorption
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_EnergyAbsorption_UOM
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_ImpactSpeed
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_ImpactSpeed_UOM
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_BarrierEquivalentSpeed
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_BarrierEquivalentSpeed_UOM
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_EstimatedDeltaV
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_Rank
+VehicleExterior_CDC_CDCevent_ComputerGeneratedDeltaV_Basis
+VehicleExterior_Crush_CrushObject
+VehicleExterior_Crush_CrushObject_DeformNumber
+VehicleExterior_Crush_CrushObject_ProfileNo
+VehicleExterior_Crush_CrushObject_EventNumber
+VehicleExterior_Crush_CrushObject_DirectDamageLocation
+VehicleExterior_Crush_CrushObject_FieldlLocation
+VehicleExterior_Crush_CrushObject_MaxCrushLocation
+VehicleExterior_Crush_CrushObject_CDCID
+VehicleExterior_Crush_CrushObject_EventID
+VehicleExterior_Crush_CrushObject_CDCNo
+VehicleExterior_Crush_CrushObject_FieldL
+VehicleExterior_Crush_CrushObject_FieldL_UOM
+VehicleExterior_Crush_CrushObject_FieldLD
+VehicleExterior_Crush_CrushObject_FieldLD_UOM
+VehicleExterior_Crush_CrushObject_SMASHL
+VehicleExterior_Crush_CrushObject_SMASHL_UOM
+VehicleExterior_Crush_CrushObject_DirectD
+VehicleExterior_Crush_CrushObject_DirectD_UOM
+VehicleExterior_Crush_CrushObject_WidthCDC
+VehicleExterior_Crush_CrushObject_WidthCDC_UOM
+VehicleExterior_Crush_CrushObject_Category
+VehicleExterior_Crush_CrushObject_LateralMeasurements_LateralMeasurement_Sign
+VehicleExterior_Crush_CrushObject_LateralMeasurements_LateralMeasurement_PlaneCategory
+VehicleExterior_Crush_CrushObject_LateralMeasurements_LateralMeasurement_Max
+VehicleExterior_Crush_CrushObject_VerticalMeasurements_VerticalMeasurement_Sign
+VehicleExterior_Crush_CrushObject_VerticalMeasurements_VerticalMeasurement_PlaneCategory
+VehicleExterior_Crush_CrushObject_VerticalMeasurements_VerticalMeasurement_Max
+VehicleExterior_Crush_CrushObject_Measurements_Measurement
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_SequenceNo
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_Sign
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_PlaneCategory
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_Max
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_Max_UOM
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C1
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C1_UOM
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C2
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C2_UOM
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C3
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C3_UOM
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C4
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C4_UOM
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C5
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C5_UOM
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C6
+VehicleExterior_Crush_CrushObject_Measurements_Measurement_C6_UOM
+VehicleExterior_Crush_CrushObject_AVG_CMAX
+VehicleExterior_Crush_CrushObject_AVG_CMAX_UOM
+VehicleExterior_Crush_CrushObject_AVG_C1
+VehicleExterior_Crush_CrushObject_AVG_C1_UOM
+VehicleExterior_Crush_CrushObject_AVG_C2
+VehicleExterior_Crush_CrushObject_AVG_C2_UOM
+VehicleExterior_Crush_CrushObject_AVG_C3
+VehicleExterior_Crush_CrushObject_AVG_C3_UOM
+VehicleExterior_Crush_CrushObject_AVG_C4
+VehicleExterior_Crush_CrushObject_AVG_C4_UOM
+VehicleExterior_Crush_CrushObject_AVG_C5
+VehicleExterior_Crush_CrushObject_AVG_C5_UOM
+VehicleExterior_Crush_CrushObject_AVG_C6
+VehicleExterior_Crush_CrushObject_AVG_C6_UOM
+VehicleExterior_EDR_Obtained
+VehicleExterior_EDR_EDRfile
+VehicleExterior_EDR_EDRfile_EDRID
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Version
+VehicleExterior_EDR_EDRfile_EDRgeneralData_LampStatus
+VehicleExterior_EDR_EDRfile_EDRgeneralData_CDC
+VehicleExterior_EDR_EDRfile_EDRgeneralData_CDC_CDCID
+VehicleExterior_EDR_EDRfile_EDRgeneralData_CDC_EventSeqNumber
+VehicleExterior_EDR_EDRfile_EDRgeneralData_DeployStatus
+VehicleExterior_EDR_EDRfile_EDRgeneralData_IgnitionCycleEvent
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Investigation
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Driver_Belt
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Driver_Pretensioner
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Driver_Pretensioner_UOM
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Driver_SeatTrackForward
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Passenger_Belt
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Passenger_Seat
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Passenger_Pretensioner
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Passenger_Pretensioner_UOM
+VehicleExterior_EDR_EDRfile_EDRgeneralData_Passenger_SeatTrackForward
+VehicleExterior_EDR_EDRfile_AirbagDeploy_AirbagDeployTime_Type
+VehicleExterior_EDR_EDRfile_AirbagDeploy_AirbagDeployTime_Position
+VehicleExterior_EDR_EDRfile_AirbagDeploy_AirbagDeployTime_Stage1
+VehicleExterior_EDR_EDRfile_AirbagDeploy_AirbagDeployTime_Stage1_UOM
+VehicleExterior_EDR_EDRfile_AirbagDeploy_AirbagDeployTime_Stage2
+VehicleExterior_EDR_EDRfile_AirbagDeploy_AirbagDeployTime_Stage2_UOM
+VehicleExterior_EDR_EDRfile_PreCrash_PreCrashData_Preseconds
+VehicleExterior_EDR_EDRfile_PreCrash_PreCrashData_Speed
+VehicleExterior_EDR_EDRfile_PreCrash_PreCrashData_Speed_UOM
+VehicleExterior_EDR_EDRfile_PreCrash_PreCrashData_EngineSpeed
+VehicleExterior_EDR_EDRfile_PreCrash_PreCrashData_Throttle
+VehicleExterior_EDR_EDRfile_PreCrash_PreCrashData_BrakeSwitchStatus
+VehicleExterior_EDR_EDRfile_Crash_Longitudinal_DeltaV_Time
+VehicleExterior_EDR_EDRfile_Crash_Longitudinal_DeltaV_Time_UOM
+VehicleExterior_EDR_EDRfile_Crash_Longitudinal_DeltaV_DeltaV
+VehicleExterior_EDR_EDRfile_Crash_Longitudinal_DeltaV_DeltaV_UOM
+VehicleExterior_EDR_EDRfile_Crash_Lateral_DeltaV_Time
+VehicleExterior_EDR_EDRfile_Crash_Lateral_DeltaV_Time_UOM
+VehicleExterior_EDR_EDRfile_Crash_Lateral_DeltaV_DeltaV
+VehicleExterior_EDR_EDRfile_Crash_Lateral_DeltaV_DeltaV_UOM
+VehicleExterior_Tire_General_TransmissionType
+VehicleExterior_Tire_General_DriveWheels
+VehicleExterior_Tire_General_GVWR
+VehicleExterior_Tire_General_GVWR_UOM
+VehicleExterior_Tire_General_GAWRFront
+VehicleExterior_Tire_General_GAWRFront_UOM
+VehicleExterior_Tire_General_GAWRRear
+VehicleExterior_Tire_General_GAWRRear_UOM
+VehicleExterior_Tire_General_RecommendedTireSize_RecommendationObject_Front_SizeType
+VehicleExterior_Tire_General_RecommendedTireSize_RecommendationObject_Front_Size
+VehicleExterior_Tire_General_RecommendedTireSize_RecommendationObject_Front_ColdPressure
+VehicleExterior_Tire_General_RecommendedTireSize_RecommendationObject_Front_ColdPressure_UOM
+VehicleExterior_Tire_General_RecommendedTireSize_RecommendationObject_Rear_SizeType
+VehicleExterior_Tire_General_RecommendedTireSize_RecommendationObject_Rear_Size
+VehicleExterior_Tire_General_RecommendedTireSize_RecommendationObject_Rear_ColdPressure
+VehicleExterior_Tire_General_RecommendedTireSize_RecommendationObject_Rear_ColdPressure_UOM
+VehicleExterior_Tire_General_Tires_TireObject_Location
+VehicleExterior_Tire_General_Tires_TireObject_Manufacturer
+VehicleExterior_Tire_General_Tires_TireObject_Model
+VehicleExterior_Tire_General_Tires_TireObject_Type
+VehicleExterior_Tire_General_Tires_TireObject_Size
+VehicleExterior_Tire_General_Tires_TireObject_TIN
+VehicleExterior_Tire_General_Tires_TireObject_TreadDepth
+VehicleExterior_Tire_General_Tires_TireObject_TreadDepth_UOM
+VehicleExterior_Tire_General_Tires_TireObject_MaxPressure
+VehicleExterior_Tire_General_Tires_TireObject_MaxPressure_UOM
+VehicleExterior_Tire_General_Tires_TireObject_MeasuredPressure
+VehicleExterior_Tire_General_Tires_TireObject_MeasuredPressure_UOM
+VehicleExterior_Tire_General_Tires_TireObject_Restricted
+VehicleExterior_Tire_General_Tires_TireObject_Damage_DamageReason
+
+VEHICLEINTERIOR:
+CaseId
+VehicleInterior_VehicleID
+VehicleInterior_VehicleNumber
+VehicleInterior_Integrity_PassengerCompartmentIntegrityLoss_PassCompIntegrity
+VehicleInterior_Integrity_PostCrashIntegrityLoss
+VehicleInterior_Integrity_IntegrityGrid
+VehicleInterior_Integrity_IntegrityGrid_LocationCode
+VehicleInterior_Integrity_IntegrityGrid_IntegrityLocation_Location
+VehicleInterior_Integrity_IntegrityGrid_IntegrityLocation_Opening
+VehicleInterior_Integrity_IntegrityGrid_IntegrityLocation_Failure
+VehicleInterior_Glazing_GlazingLocation
+VehicleInterior_Glazing_GlazingLocation_LocationCode
+VehicleInterior_Glazing_GlazingLocation_Location
+VehicleInterior_Glazing_GlazingLocation_Type
+VehicleInterior_Glazing_GlazingLocation_PreCrashStatus
+VehicleInterior_Glazing_GlazingLocation_ImpactDamage
+VehicleInterior_Glazing_GlazingLocation_OccupantDamage
+VehicleInterior_Intrusion_IntrusionObject
+VehicleInterior_Intrusion_IntrusionObject_IntrusionNumber
+VehicleInterior_Intrusion_IntrusionObject_Row
+VehicleInterior_Intrusion_IntrusionObject_Position
+VehicleInterior_Intrusion_IntrusionObject_Area
+VehicleInterior_Intrusion_IntrusionObject_IntrudedComponent
+VehicleInterior_Intrusion_IntrusionObject_Comparison
+VehicleInterior_Intrusion_IntrusionObject_Intruded
+VehicleInterior_Intrusion_IntrusionObject_Intrusion
+VehicleInterior_Intrusion_IntrusionObject_Magnitude
+VehicleInterior_Intrusion_IntrusionObject_CrushDirection
+VehicleInterior_Intrusion_IntrusionWidth_RowWidth_Location
+VehicleInterior_Intrusion_IntrusionWidth_RowWidth_Width
+VehicleInterior_Instrument_OdometerReading
+VehicleInterior_Instrument_OdometerReading_UOM
+VehicleInterior_Instrument_OdometerSource
+VehicleInterior_Instrument_DamageOccupantContact
+VehicleInterior_Instrument_AdjustablePedal
+VehicleInterior_Instrument_KneeBolsterCovering
+VehicleInterior_Instrument_KneeBolsterDeform
+VehicleInterior_Instrument_GloveCompartmentDoor
+VehicleInterior_Instrument_AdaptiveDrivingEquipment
+VehicleInterior_Instrument_AdaptiveEquipment_AdaptiveEquipmentItem
+VehicleInterior_SteeringWheel_ColumnType
+VehicleInterior_SteeringWheel_TiltAdjustment
+VehicleInterior_SteeringWheel_TelescopicAdjustment
+VehicleInterior_SteeringWheel_LocationRimSpokeDeformation
+VehicleInterior_SteeringWheel_RimSpokeDeformation
+VehicleInterior_SteeringWheel_RimSpokeDeformation_UOM
+VehicleInterior_Contact_ContactArea_Contact
+VehicleInterior_Contact_ContactArea_Component
+VehicleInterior_Contact_ContactArea_Evidence
+VehicleInterior_Contact_ContactArea_Occupant
+VehicleInterior_Contact_ContactArea_BodyRegion
+VehicleInterior_Contact_ContactArea_Confidence
+VehicleInterior_Ejection_EjectionObject
+VehicleInterior_Ejection_EjectionObject_EjectionNumber
+VehicleInterior_Ejection_EjectionObject_OccNumber
+VehicleInterior_Ejection_EjectionObject_Type
+VehicleInterior_Ejection_EjectionObject_Area
+VehicleInterior_Ejection_EjectionObject_Medium
+VehicleInterior_Ejection_EjectionObject_MediumStatus
+VehicleInterior_Entrapment
