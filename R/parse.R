@@ -5,6 +5,17 @@
 parse_xml <- function() {
     case_ids <- get_case_ids()
     df <- data_frame(id = case_ids)
+
+    # Wrap xml2 functions to return NA for missing elements instead of error
+    xml_text <- function(x) {
+        v <- xml2::xml_text(x)
+        ifelse(!length(v), NA, v)
+    }
+    xml_attr <- function(x, attr) {
+        v <- xml2::xml_attr(x, attr)
+        ifelse(!length(v), NA, v)
+    }
+
     for (i in 1:length(case_ids)) {
         # Progress Reporting
         if (!(i %% 1000)) print(i)
@@ -87,4 +98,4 @@ run_check <- function(str) {
     return(ret)
 
 }
-#eg. run_check("/Case/CaseForm/Crash2")
+#eg. run_check("/Case/CaseForm/Crash/PSU")
