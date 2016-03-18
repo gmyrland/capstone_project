@@ -4,6 +4,8 @@
 ## Parse all case files to single rectangular data frame
 parse_xml <- function() {
     case_ids <- get_case_ids()
+    #case_ids <- sample(case_ids, 1000) # For testing
+
     df <- data_frame(id = case_ids)
 
     # Wrap xml2 functions to return NA for missing elements instead of error
