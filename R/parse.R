@@ -3,9 +3,11 @@
 
 ## Parse all case files to single rectangular data frame
 parse_xml <- function() {
+    # Generate vector of Case Ids to iterate through
     case_ids <- get_case_ids()
     #case_ids <- sample(case_ids, 1000) # For testing
 
+    # Create dataframe df
     df <- data_frame(id = case_ids)
 
     # Wrap xml2 functions to return NA for missing elements instead of error
@@ -19,12 +21,14 @@ parse_xml <- function() {
     }
 
     for (i in 1:length(case_ids)) {
-        # Progress Reporting
-        if (!(i %% 1000)) print(i)
+        # Progress Reporting on Console
+        if (!(i %% 1000)) cat(i, fill=TRUE)
 
         # Fetch case file
         f <- case_path(df$id[i])
         stopifnot(file.exists(f))
+
+        # Read xml data
         data <- read_xml(f)
 
         ## xml2 functions:
