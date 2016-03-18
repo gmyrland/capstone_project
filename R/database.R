@@ -17,10 +17,10 @@ read_db <- function() {
 }
 
 ## Cache dataframe to sqlite database
-write_db <- function(df) {
+write_db <- function(tbl, df) {
     db <- db()
     tryCatch(
-        dbWriteTable(db, "Data", as.data.frame(df), overwrite=TRUE, append=FALSE),
+        dbWriteTable(db, name=tbl, as.data.frame(df), overwrite=TRUE, append=FALSE),
         error = function(cond) cat(cond$message),
         finally = dbDisconnect(db)
     )

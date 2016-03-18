@@ -35,7 +35,7 @@ source("R/parse.R")
 source("R/database.R")
 if (do_parse) {
     df <- parse_xml()   # Parse the XML files
-    write_db(df)        # Cache df to sqlite
+    write_db(df,"Data") # Cache df to sqlite
 } else {
     df <- read_db()     # Load cached data
 }
