@@ -72,3 +72,19 @@ parse_attr <- function(str) {
     return(df %>% group_by(attr) %>% summarize())
 }
 #eg. write.csv(parse_attr("/Case/CaseForm/Crash/PSU"), "data/attr_Case_CaseForm_Crash_PSU.csv")
+
+## Sanity check function to ensure at least one value text value exists for given xpath
+run_check <- function(str) {
+    case_ids <- sample(get_case_ids())
+    ret <- FALSE
+    for (i in 1:length(case_ids)) {
+        f <- case_path(case_ids[i])
+        data <- read_xml(f)
+        v <- xml_text(xml_find_all(data, str))
+        if(is.character(v) && length(v) >= 1) return(TRUE)
+    }
+    print("NOT FOUND!!!!!")
+    return(ret)
+
+}
+#eg. run_check("/Case/CaseForm/Crash2")
