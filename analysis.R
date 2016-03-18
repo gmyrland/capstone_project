@@ -23,7 +23,7 @@ get_case_ids  <- function() {
 
 ## Control variables. Use for skipping steps.
 do_webscrape <- FALSE
-do_parse <- TRUE
+do_parse <- FALSE
 
 ## Source web-scraping code and scrape any remaining cases to data/cases
 source("R/scrape.R")
@@ -31,10 +31,12 @@ if (do_webscrape)
     download_all_cases()
 
 ## Parse XML to data frame
-source("R/parse.R")
 source("R/database.R")
-if (do_parse) {
-    df <- parse_xml()   # Parse the XML files
-} else {
-    #df <- read_db()     # Load cached data
-}
+source("R/parse.R")
+if (do_parse)
+    df <- parse_xml() # Parse the XML files
+
+## If database not manually created above, download from Amazon S3
+db_url <- 'http://gmyrland.capstone.s3.amazonaws.com/db.zip'
+download.file(db_url, destfile='data/db.zip', method="auto")
+unzip('data/db.zip', exdir='data')
