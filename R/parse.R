@@ -50,10 +50,25 @@ parse_xml <- function(str) {
         f <- case_path(df$id[i])
         stopifnot(file.exists(f))
         data <- read_xml(f)
-        subdata <- xml_find_all(data, str) #"eg. ")
+        subdata <- xml_find_all(data, str)
         df$count[i] <- length(subdata)
         df$children[i] <- paste(xml_name(xml_children(subdata)), collapse="|")
     }
     return(df)
 }
 #eg. write.csv(parse_xml("/Case/CaseForm/Crash/PSU"), "data/Case_CaseForm_Crash_PSU.csv")
+
+
+## Iterate through cases to extract xml attributes for given xpath
+parse_attr <- function(str) {
+    case_ids <- get_case_ids()
+    df <- data_frame(id = case_ids)
+    for (i in 1:length(case_ids)) {
+        if (!(i %% 1000)) print(i)
+        f <- case_path(df$id[i])
+        data <- read_xml(f)
+        df$attr <- paste(unique(names(unlist(xml_attrs(xml_find_all(data, str))))), collapse="|")
+    }
+    return(df %>% group_by(attr) %>% summarize())
+}
+#eg. write.csv(parse_attr("/Case/CaseForm/Crash/PSU"), "data/attr_Case_CaseForm_Crash_PSU.csv")
