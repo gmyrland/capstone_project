@@ -39,6 +39,8 @@ if (do_parse)
     parse_xml() # Parse the XML files
 
 ## If database not manually created above, download from Amazon S3
-db_url <- 'http://gmyrland.capstone.s3.amazonaws.com/db.zip'
-download.file(db_url, destfile='data/db.zip', method="auto")
-unzip('data/db.zip', exdir='data')
+if (!file.exists(db_path)) {
+    db_url <- 'http://gmyrland.capstone.s3.amazonaws.com/db.zip'
+    download.file(db_url, destfile='data/db.zip', method="auto")
+    unzip('data/db.zip', exdir='data')
+}

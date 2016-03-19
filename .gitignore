@@ -1,2 +1,4 @@
 *.pdf
 /data/cases
+/data/db.s3db
+/data/db.zip
