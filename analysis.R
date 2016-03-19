@@ -34,7 +34,7 @@ if (do_webscrape)
 source("R/database.R")
 source("R/parse.R")
 if (do_parse)
-    df <- parse_xml() # Parse the XML files
+    parse_xml() # Parse the XML files
 
 ## If database not manually created above, download from Amazon S3
 db_url <- 'http://gmyrland.capstone.s3.amazonaws.com/db.zip'

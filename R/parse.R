@@ -1,7 +1,7 @@
 ##############
 ## XML Parsing
 
-## Parse all case files to single rectangular data frame
+## Parse all case files to single rectangular data frames and write database
 parse_xml <- function() {
     # Generate vector of Case Ids to iterate through
     case_ids <- get_case_ids()
@@ -840,7 +840,6 @@ parse_xml <- function() {
             vehicleint$VehicleInterior_Entrapment[j] <- xml_find_all(xml_vehicleint[j], "./Entrapment") %>% xml_text
         }
         df$VehicleInterior[i] <- list(vehicleint)
-
         df$Cases[i] <- list(case)
     }
 
@@ -855,9 +854,7 @@ parse_xml <- function() {
     write_db("Safety", bind_rows(df$Safety))
     write_db("VehicleExterior", bind_rows(df$VehicleExterior))
     write_db("VehicleInterior", bind_rows(df$VehicleInterior))
-
-    # Return the nested dataframe object
-    return(df)
+    return(TRUE)
 }
 
 #############################################
