@@ -1,8 +1,11 @@
 ##############
 ## Database IO
 
+## Database path
+db_path <- "data/db.s3db"
+
 ## Generate database connection
-db <- function() {dbConnect(SQLite(), dbname="data/db.s3db")}
+db <- function() {dbConnect(SQLite(), dbname=db_path)}
 
 ## Read dataframe from sqlite database
 read_db <- function(tbl) {
