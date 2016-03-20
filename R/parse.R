@@ -128,7 +128,7 @@ parse_xml <- function() {
         ems <- data_frame(CaseId = rep(df$id[i], length(xml_ems)))
         for (j in seq_along(xml_ems)) {
             ems$EMS_EMSvehicleNumber[j] <- xml_ems[j] %>% xml_attr("EMSvehicleNumber")
-            ems$EMS_EMSvehicleNumber[j] <- xml_ems[j] %>% xml_attr("EMSvehID")
+            ems$EMS_EMSvehID[j] <- xml_ems[j] %>% xml_attr("EMSvehID")
             ems$EMS_AgencyType[j] <- xml_find_all(xml_ems[j], "./AgencyType") %>% xml_text
             ems$EMS_Agency[j] <- xml_find_all(xml_ems[j], "./Agency") %>% xml_text
             ems$EMS_Type[j] <- xml_find_all(xml_ems[j], "./Type") %>% xml_text
@@ -144,7 +144,6 @@ parse_xml <- function() {
         xml_genvehicle <- xml_find_all(data, "/Case/GeneralVehicleForms/GeneralVehicleForm")
         genvehicle <- data_frame(CaseId = rep(df$id[i], length(xml_genvehicle)))
         for (j in seq_along(xml_genvehicle)) {
-            genvehicle$GeneralVehicle_caseID[j] <- xml_genvehicle[j] %>% xml_attr("caseID")
             genvehicle$GeneralVehicle_VehicleNumber[j] <- xml_genvehicle[j] %>% xml_attr("VehicleNumber")
             genvehicle$GeneralVehicle_VehicleID[j] <- xml_genvehicle[j] %>% xml_attr("VehicleID")
             genvehicle$GeneralVehicle_CDStype[j] <- xml_genvehicle[j] %>% xml_attr("CDStype")
@@ -303,7 +302,7 @@ parse_xml <- function() {
         xml_occupant <- xml_find_all(data, "/Case/OccupantForms/OccupantForm")
         occupant <- data_frame(CaseId = rep(df$id[i], length(xml_occupant)))
         for (j in seq_along(xml_occupant)) {
-            occupant$Occupant_vehicleNumber[j] <- xml_occupant[j] %>% xml_attr("vehicleNumber")
+            occupant$Occupant_VehicleNumber[j] <- xml_occupant[j] %>% xml_attr("VehicleNumber")
             occupant$Occupant_OccupantNumber[j] <- xml_occupant[j] %>% xml_attr("OccupantNumber")
             occupant$Occupant_OccupantID[j] <- xml_occupant[j] %>% xml_attr("OccupantID")
             occupant$Occupant_Occupant_Age[j] <- xml_find_all(xml_occupant[j], "./Occupant/Age") %>% xml_text
@@ -353,8 +352,8 @@ parse_xml <- function() {
             occupant$Occupant_Seat_SeatComponents_SeatBackPostInclination[j] <- xml_find_all(xml_occupant[j], "./Seat/SeatComponents/SeatBackPostInclination") %>% xml_text
             occupant$Occupant_Seat_SeatComponents_AirBagAvailable[j] <- xml_find_all(xml_occupant[j], "./Seat/SeatComponents/AirBagAvailable") %>% xml_text
             occupant$Occupant_Airbag_AirbagObject[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_text
-            occupant$Occupant_Airbag_AirbagObject_seatRow[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("seatRow")
-            occupant$Occupant_Airbag_AirbagObject_seatLocation[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("seatLocation")
+            occupant$Occupant_Airbag_AirbagObject_SeatRow[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("SeatRow")
+            occupant$Occupant_Airbag_AirbagObject_SeatLocation[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("SeatLocation")
             occupant$Occupant_Airbag_AirbagObject_AirbagID[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("AirbagID")
             occupant$Occupant_Airbag_AirbagObject_AirbagNum[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("AirbagNum")
             occupant$Occupant_Airbag_AirbagObject_Function_Location[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject/Function/Location") %>% xml_text

@@ -257,7 +257,7 @@ VehicleInterior  /Case/VehicleInteriorForms/VehicleInteriorForm VehicleInterior
 /Case/IMGForm/Exteriorvehicle -> ...
 /Case/IMGForm/Injury -> ...
 /Case/OccupantForms (caseID)
-/Case/OccupantForms/OccupantForm+{0,18} (vehicleNumber, OccupantNumber, OccupantID)
+/Case/OccupantForms/OccupantForm+{0,18} (VehicleNumber, OccupantNumber, OccupantID)
 /Case/OccupantForms/OccupantForm/Occupant
 /Case/OccupantForms/OccupantForm/Occupant/Age (UOM)
 /Case/OccupantForms/OccupantForm/Occupant/OccHeight (UOM)
@@ -306,7 +306,7 @@ VehicleInterior  /Case/VehicleInteriorForms/VehicleInteriorForm VehicleInterior
 /Case/OccupantForms/OccupantForm/Seat/SeatComponents/SeatBackPostInclination
 /Case/OccupantForms/OccupantForm/Seat/SeatComponents/AirBagAvailable
 /Case/OccupantForms/OccupantForm/Airbag
-/Case/OccupantForms/OccupantForm/Airbag/AirbagObject (seatRow, seatLocation, AirbagID, AirbagNum)
+/Case/OccupantForms/OccupantForm/Airbag/AirbagObject (SeatRow, SeatLocation, AirbagID, AirbagNum)
 /Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function
 /Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/Location
 /Case/OccupantForms/OccupantForm/Airbag/AirbagObject/Function/Status
@@ -842,7 +842,7 @@ Person_InjurySource
 EMS:
 CaseId
 EMS_EMSvehicleNumber
-EMS_EMSvehicleNumber
+EMS_EMSvehID
 EMS_AgencyType
 EMS_Agency
 EMS_Type
@@ -854,7 +854,6 @@ EMS_ArrMedical
 
 GENERALVEHICLE:
 CaseId
-GeneralVehicle_caseID
 GeneralVehicle_VehicleNumber
 GeneralVehicle_VehicleID
 GeneralVehicle_CDStype
@@ -997,7 +996,7 @@ GeneralVehicle_DeltaV_Event_EstimatedDeltaV
 
 OCCUPANTS:
 CaseId
-Occupant_vehicleNumber
+Occupant_VehicleNumber
 Occupant_OccupantNumber
 Occupant_OccupantID
 Occupant_Occupant_Age
@@ -1047,8 +1046,8 @@ Occupant_Seat_SeatComponents_SeatBackPriorInclination
 Occupant_Seat_SeatComponents_SeatBackPostInclination
 Occupant_Seat_SeatComponents_AirBagAvailable
 Occupant_Airbag_AirbagObject
-Occupant_Airbag_AirbagObject_seatRow
-Occupant_Airbag_AirbagObject_seatLocation
+Occupant_Airbag_AirbagObject_SeatRow
+Occupant_Airbag_AirbagObject_SeatLocation
 Occupant_Airbag_AirbagObject_AirbagID
 Occupant_Airbag_AirbagObject_AirbagNum
 Occupant_Airbag_AirbagObject_Function_Location
