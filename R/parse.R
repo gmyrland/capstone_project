@@ -351,7 +351,6 @@ parse_xml <- function() {
             occupant$Occupant_Seat_SeatComponents_SeatBackPriorInclination[j] <- xml_find_all(xml_occupant[j], "./Seat/SeatComponents/SeatBackPriorInclination") %>% xml_text
             occupant$Occupant_Seat_SeatComponents_SeatBackPostInclination[j] <- xml_find_all(xml_occupant[j], "./Seat/SeatComponents/SeatBackPostInclination") %>% xml_text
             occupant$Occupant_Seat_SeatComponents_AirBagAvailable[j] <- xml_find_all(xml_occupant[j], "./Seat/SeatComponents/AirBagAvailable") %>% xml_text
-            occupant$Occupant_Airbag_AirbagObject[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_text
             occupant$Occupant_Airbag_AirbagObject_SeatRow[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("SeatRow")
             occupant$Occupant_Airbag_AirbagObject_SeatLocation[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("SeatLocation")
             occupant$Occupant_Airbag_AirbagObject_AirbagID[j] <- xml_find_all(xml_occupant[j], "./Airbag/AirbagObject") %>% xml_attr("AirbagID")
