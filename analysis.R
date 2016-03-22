@@ -5,8 +5,8 @@ library(DBI)
 library(RSQLite)
 
 ## Ensure working directory is correct
-## If fails, set working directory to root dir of project, e.g. setwd('~/source/NASS')
-expected_dirs <- c("01_abstract", "02_data_review", "data", "doc")
+# If fails, set working directory to root dir of project, e.g. setwd('~/source/nass')
+expected_dirs <- c("01_abstract", "02_data_review", "data", "doc", "R")
 stopifnot(dir.exists(expected_dirs))
 
 ## Useful Functions
