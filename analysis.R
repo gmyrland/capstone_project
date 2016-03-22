@@ -14,10 +14,12 @@ source("R/global.R")
 source("R/scrape.R")
 source("R/database.R")
 source("R/parse.R")
+source("R/features.R")
 
 ## Control variables. Use for skipping steps.
 do_webscrape <- FALSE
 do_parse <- FALSE
+do_build_features <- FALSE
 
 ## Source web-scraping code and scrape any remaining cases to data/cases
 if (do_webscrape)
@@ -33,3 +35,8 @@ if (!file.exists(db_path)) {
     download.file(db_url, destfile='data/db.zip', method="auto")
     unzip('data/db.zip', exdir='data')
 }
+
+## Create custom dataset with features for machine learning
+df <- NULL
+if (do_build_features)
+    df <- build_ml_dataset()
