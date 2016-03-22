@@ -27,7 +27,7 @@ if (do_webscrape)
 
 ## Parse XML to data frame
 if (do_parse)
-    parse_xml() # Parse the XML files
+    parse_xml()
 
 ## If database not manually created above, download from Amazon S3
 if (!file.exists(db_path)) {
