@@ -14,7 +14,7 @@ source("R/global.R")
 source("R/scrape.R")
 source("R/database.R")
 source("R/parse.R")
-source("R/features.R")
+#source("R/features.R")
 
 ## Control variables. Use for skipping steps.
 do_webscrape <- FALSE
@@ -37,6 +37,10 @@ if (!file.exists(db_path)) {
 }
 
 ## Create custom dataset with features for machine learning
-df <- NULL
-if (do_build_features)
+if (do_build_features) {
     df <- build_ml_dataset()
+    save(df, file='data/df.Rdata')
+}
+
+## Load df
+load('data/df.Rdata')
