@@ -1,41 +1,38 @@
 # Build data frame for use in modelling, including all relevant features
 
 #build_ml_dataset <- function() {
-    # Function to extract dataframe from SQLite table by name
-    get_tbl <- function(name) tbl(src_sqlite(db_path), name) %>% as.data.frame(n=-1)
-    
     # Join data to form rows by occupant
-    df_joined <- get_tbl("Occupants") %>%
-        left_join(get_tbl("Persons"), c(
+    df_joined <- read_db("Occupants") %>%
+        left_join(read_db("Persons"), c(
             "CaseId"="CaseId",
             "Occupant_VehicleNumber"="Person_VehicleNumber",
             "Occupant_OccupantNumber"="Person_OccNumber"
         )) %>%
-        left_join(get_tbl("Cases"), c("CaseId" = "CaseId")) %>%
+        left_join(read_db("Cases"), c("CaseId" = "CaseId")) %>%
         left_join(
             # requires aggregation to single case, use 1st event
-            get_tbl("Events") %>% filter(Event_EventNumber == 1), c(
+            read_db("Events") %>% filter(Event_EventNumber == 1), c(
                 "CaseId" = "CaseId",
                 "Occupant_VehicleNumber" = "Event_VehicleNumber"
         )) %>%
-        left_join(get_tbl("Vehicles"), c(
+        left_join(read_db("Vehicles"), c(
             "CaseId" = "CaseId",
             "Occupant_VehicleNumber" = "Vehicle_VehicleNumber"
         )) %>%
         # ems: requires aggregation to single case, ignore
-        left_join(get_tbl("GeneralVehicle"), c(
+        left_join(read_db("GeneralVehicle"), c(
             "CaseId" = "CaseId",
             "Occupant_VehicleNumber" = "GeneralVehicle_VehicleNumber"
         )) %>%
-        left_join(get_tbl("Safety"), c(
+        left_join(read_db("Safety"), c(
             "CaseId" = "CaseId",
             "Occupant_VehicleNumber" = "Safety_VehicleNumber"
         )) %>%
-        left_join(get_tbl("VehicleExterior"), c(
+        left_join(read_db("VehicleExterior"), c(
             "CaseId" = "CaseId",
             "Occupant_VehicleNumber" = "VehicleExterior_VehicleNumber"
         )) %>%
-        left_join(get_tbl("VehicleInterior"), c(
+        left_join(read_db("VehicleInterior"), c(
             "CaseId" = "CaseId",
             "Occupant_VehicleNumber" = "VehicleInterior_VehicleNumber"
         )) %>%

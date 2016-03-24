@@ -8,15 +8,8 @@ db_path <- "data/db.s3db"
 db <- function() {dbConnect(SQLite(), dbname=db_path)}
 
 ## Read dataframe from sqlite database
-read_db <- function(tbl) {
-    db <- db()
-    df <- NULL
-    tryCatch(
-        df <- dbReadTable(db, name=tbl),
-        error = function(cond) cat(cond$message),
-        finally = dbDisconnect(db)
-    )
-    return(df)
+read_db <- function(name) {
+    tbl(src_sqlite(db_path), name) %>% as.data.frame(n=-1)
 }
 
 ## Cache dataframe to sqlite database
