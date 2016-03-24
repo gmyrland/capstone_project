@@ -11,7 +11,7 @@ library(leaps)
 library(glmnet)
 set.seed(1234)
 
-f <- reformulate(names(df)[!names(df) %in% c('CaseId', 'fatal')], 'fatal')
+f <- reformulate(names(df)[!names(df) %in% c('CaseId', 'CaseWeight', 'model', 'fatal')], 'fatal')
 #f <- reformulate(c('age', 'height', 'weight', 'factor(sex)', 'factor(role)'), 'fatal')
 
 ##########
@@ -134,7 +134,14 @@ n <- nrow(df)
 shuffled <- df[sample(n),]
 train <- shuffled[1:round(0.7 * n),]
 test <- shuffled[(round(0.7 * n) + 1):n,]
-randomForest(fatal ~ age + height + weight, data=train, ntree=5, importance=TRUE)
+fit <- randomForest(factor(fatal) ~ age + weight + seatbelt_used_police, data=train, ntree=5, importance=TRUE)
+fit <- randomForest(f, data=train, ntree=5)
+hist(predict(fit, test, type="prob")[,2])
+
+p <- predict(fit, test, type="response")
+pr <- prediction(as.integer(p), as.integer(test$fatal))
+prf <- performance(pr, measure = "tpr", x.measure="fpr")
+plot(prf)
 
 ############
 ## Stepwise
@@ -152,7 +159,9 @@ summary(lm(fatal ~ height, data=dfcc))$adj.r.squared
 
 ##############
 ## Best Subset
-summary(regsubsets(f, data=df, nbest=2))$outmat %>% as.data.frame
+dff <- df[sample(nrow(df), 1000), ]
+f <- reformulate(names(df)[!names(df) %in% c('CaseId', 'CaseWeight', 'model', 'fatal')], 'fatal')
+summary(regsubsets(f, data=dff, nbest=1, nvmax=2, really.big=T))$outmat %>% as.data.frame
 
 ################################
 ## Regularized Linear Regression
