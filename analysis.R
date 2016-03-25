@@ -38,7 +38,7 @@ if (!file.exists(db_path)) {
 
 ## Create custom dataset with features for machine learning
 if (do_build_features) {
-    df <- build_ml_dataset()
+    df <- build_clean_dataset()
     save(df, file='data/df.Rdata')
 }
 
