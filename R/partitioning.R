@@ -55,13 +55,44 @@ stepAIC(null, scope=list(lower=null, upper=full), direction="forward", trace=FAL
 
 vars <- names(df)[!names(df) %in% c('CaseId', 'CaseWeight', 'fatal')]
 #for (i in 1:(length(vars)-3)) {
-    ff <- frm(vars[(i+51):length(i)])
+    ff <- frm(vars[61:82])
     #ff <- frm(vars)
     full <- lm(ff, data=df_train)
     null <- lm(fatal ~ 1, data=df_train)
+    print(ff)
     print(stepAIC(null, scope=list(lower=null, upper=full), direction="forward", trace=FALSE)$call)
 #}
 
 for (var in vars) {
     print(chisq.test(df[var], df$fatal))
 }
+
+    # fatal ~ vehicles_involved + dayofweek + is_weeked + crashtime + month + year + crash_type + crash_config + child_seat_present + 
+    #     age + height + weight + role + race + sex + eyewear + airbag_available_police + airbag_available + airbag_deployment + seatbelt_availability
+    # lm(formula = fatal ~ crash_config + eyewear + race + age + airbag_deployment + sex + year + crash_type + crashtime + airbag_available + 
+    #        weight + height + month + dayofweek + airbag_available_police + vehicles_involved + role + child_seat_present + seatbelt_availability, 
+    #    data = df_train)
+    # 
+    # fatal ~ seatbelt_used + seat_row + seat_location + seat_position + entrapment + posture + seat_orientation + seat_inclination + 
+    #     vehicle_year + make + event_class + damage_area + contacted_area + contacted + contacted_class + damage_plane + body_category + 
+    #     body_type + special_use
+    # lm(formula = fatal ~ posture + seatbelt_used + entrapment + event_class + damage_plane + seat_orientation + seat_inclination + contacted + 
+    #        contacted_area + body_type + vehicle_year + make + damage_area + seat_position + special_use + body_category + seat_row + 
+    #        seat_location, data = df_train)
+    # 
+    # fatal ~ curb_weight + cargo_weight + wheelbase + overall_length + maximum_width + average_track + front_overhang + rear_overhang + 
+    #     undeformed_end_Width + cylinders + displacement + travel_speed + posted_speed + alcohol_present + alcohol_test + alcohol_test_result + 
+    #     drugs_present + driver_race + travel_lanes + roadway_alignment
+    # lm(formula = fatal ~ alcohol_test + alcohol_present + roadway_alignment + posted_speed + driver_race + travel_lanes + average_track + 
+    #        rear_overhang + cylinders + maximum_width + curb_weight + displacement + alcohol_test_result + wheelbase + travel_speed + 
+    #        cargo_weight + overall_length + drugs_present + front_overhang, 
+    #    data = df_train)
+    # 
+    # fatal ~ roadway_profile + roadway_surface + roadway_condition + light + weather + traffic_control_device + traffic_control_device_functioning + 
+    #     preevent_movement + precrash_category + avoidance_maneuver + preimpact_stability + preimpact_location + rollover + rollover_qtr_turns + 
+    #     rollover_contacted + towed_unit + transmission + drive_Wheels + fire + tire_tread_depth + compartment_integrity_loss + odometer
+    # lm(formula = fatal ~ compartment_integrity_loss + avoidance_maneuver + preimpact_location + fire + drive_Wheels + roadway_condition + 
+    #        preevent_movement + precrash_category + rollover_qtr_turns + light + traffic_control_device_functioning + odometer + preimpact_stability + 
+    #        tire_tread_depth + rollover + rollover_contacted + weather + roadway_surface + towed_unit + roadway_profile + transmission, 
+    #    data = df_train)
+    # 
