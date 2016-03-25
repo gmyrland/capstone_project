@@ -14,7 +14,8 @@ source("R/global.R")
 source("R/scrape.R")
 source("R/database.R")
 source("R/parse.R")
-#source("R/features.R")
+source("R/cleaning.R")
+source("R/partitioning.R")
 
 ## Control variables. Use for skipping steps.
 do_webscrape <- FALSE
