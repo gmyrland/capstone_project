@@ -199,9 +199,19 @@ Finally, a regression will be performed to build a model to predict survivabilit
         2. Write description of the table and charts, such that they show the usefulness for an organization
         3. Identify the evaluation measures, such as accuracy, precision, recall, etc.
 -->
+- describe transformations (above)
+- table with chosen features, class, n-unique
+- violin plot of several features
+- data partitioning
+- machine learning approaches
+ - break data by crash type
+- confusion matrix
+- 
 
 # Conclusions
 <!--
     Give a short summary (one or two paragraphs) of your analysis and conclude the discussion by defining
     the usefulness of your analysis.
 -->
+- accuracy, etc
+- which features were most imporatant
