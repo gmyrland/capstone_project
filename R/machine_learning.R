@@ -1,22 +1,8 @@
 ## Machine Learning
 
-library(caret)
-library(rpart)
-library(rpart.plot)
-library(ROCR)
-library(VGAM)
-library(randomForest)
-library(MASS)
-library(leaps)
-library(glmnet)
-set.seed(1234)
-
-f <- reformulate(names(df)[!names(df) %in% c('CaseId', 'CaseWeight', 'model', 'fatal')], 'fatal')
-#f <- reformulate(c('age', 'height', 'weight', 'factor(sex)', 'factor(role)'), 'fatal')
-
 ##########
 # BASIC LM
-fit <- lm(f, df[sample(nrow(df),10000), ])
+fit <- lm(frm(names(df)), df[sample(nrow(df),10000), ])
 summary(fit)$adj.r.squared
 coef(fit)
 sqrt(sum(summary(fit)$residuals^2)/nrow(df)) # RMSE
@@ -24,11 +10,10 @@ qqnorm(summary(fit)$residuals)
 
 ###############################
 ## Basic LM with test/train
-n <- nrow(df)
-shuffled <- dfcc[sample(n),]
-train <- shuffled[1:round(0.7 * n),]
-test <- shuffled[(round(0.7 * n) + 1):n,]
-fit <- lm(fatal ~ age + height + weight + factor(sex) + factor(role), data=train)
+ddf <- part_split(df, prop.test=0.3, n=200)
+train <- ddf[1]
+test <- ddf[2]
+fit <- lm(frm(names(df)), data=train)
 pred <- predict(fit, test, type="response")
 pred <- as.integer(pred > 0.08)
 conf <- table(test$fatal, pred) #confusion matrix
@@ -146,8 +131,8 @@ plot(prf)
 ############
 ## Stepwise
 
-full <- lm(fatal ~ age + height + weight + factor(sex) + factor(role), data=dfcc)
-null <- lm(fatal ~ 1, data=dfcc)
+full <- lm(fatal ~ age + height + weight + factor(sex) + factor(role), data=df)
+null <- lm(fatal ~ 1, data=df)
 stepAIC(null, scope=list(lower=null, upper=full), direction="forward", trace=FALSE)
 stepAIC(full, direction="backward", trace=FALSE)
 

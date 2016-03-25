@@ -3,6 +3,18 @@ library(dplyr)
 library(xml2)
 library(DBI)
 library(RSQLite)
+library(ggplot2)
+
+# ML packages
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(ROCR)
+library(VGAM)
+library(randomForest)
+library(MASS)
+library(leaps)
+library(glmnet)
 
 ## Ensure working directory is correct
 # If fails, set working directory to root dir of project, e.g. setwd('~/source/nass')
