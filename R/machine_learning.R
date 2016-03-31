@@ -23,16 +23,30 @@ conf[2,2] / (conf[1,2] + conf[2,1]) #precision
 
 ###############################
 ## Binomial logistic regression (not working)
-n <- nrow(dfcc)
-shuffled <- dfcc[sample(n),]
+n <- nrow(df)
+shuffled <- df[sample(n),]
 train <- shuffled[1:round(0.7 * n),]
 test <- shuffled[(round(0.7 * n) + 1):n,]
-fit <- glm(fatal ~ age + height + weight + factor(sex), family = binomial(link="logit"), data=train)
+fit <- glm(fatal ~ crash_config + eyewear + posture + seatbelt_used + alcohol_test + alcohol_present + compartment_integrity_loss + avoidance_maneuver
+, family = binomial(link="logit"), data=train)
 pred <- predict(fit, test, type="link")
+pred <- predict(fit, test, type="response")
+summary(fit)
+#confint(fit)
 anova(fit, test="Chisq")
 hist(pred$fit)
-conf <- table(test$fatal, pred) #confusion matrix
+conf <- table(test$fatal, pred > 0.5) #confusion matrix
 summary(fit)
+
+fit <- glm(fatal ~ crash_config + eyewear + race + age + airbag_deployment + posture + seatbelt_used + entrapment + event_class + damage_plane + alcohol_test + alcohol_present + roadway_alignment + posted_speed + driver_race + compartment_integrity_loss + avoidance_maneuver + preimpact_location + fire + drive_Wheels, family = binomial(link="logit"), data=train)
+
+#auc
+probs <- predict(fit, test, type="response")
+pred <- prediction(probs, test$fatal)
+plot(performance(pred, "tpr", "fpr")) # ROC Curve
+#performance(pred, "auc", "fpr")@y.values[[1]] #AUC
+performance(pred, "auc")@y.values[[1]]
+table(test$fatal, pred@predictions[[1]] > 0.5)
 
 ####################
 ## Logistic Regression
