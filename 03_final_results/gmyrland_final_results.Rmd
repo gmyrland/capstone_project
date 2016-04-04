@@ -278,6 +278,7 @@ dff[chr_terms] %>%
 
 The relationship between several key features are shown in the following plots.
 Mosaic plots are used for categorical attributes, and violin plots are used for numerical attributes.
+
 ```{r, echo=FALSE}
 ggMMplot <- function(var1, var2){
   # Adapted from http://stackoverflow.com/questions/19233365/how-to-create-a-marimekko-mosaic-plot-in-ggplot2
@@ -295,33 +296,43 @@ ggMMplot <- function(var1, var2){
       xlab("Predictor Proportion") + ylab("Response Proportion") + guides(fill=guide_legend(title="Fatal"))
 }
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Age"}
 df %>% ggplot(aes(factor(fatal), age)) + geom_violin(fill="darkgreen")
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Sex"}
 ggMMplot(df$sex, df$fatal)
 ```
+
 ```{r echo=FALSE, fig.height=2.5, fig.cap="Crash Configuration"}
 ggMMplot(df$crash_config, df$fatal)
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Seatbelt Used"}
 ggMMplot(df$seatbelt_used, df$fatal)
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Entrapment"}
 ggMMplot(df$entrapment, df$fatal)
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Alcohol Present"}
 ggMMplot(df$alcohol_present, df$fatal)
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Roadway Alignment"}
 ggMMplot(df$roadway_alignment, df$fatal)
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Avoidance Maneuver"}
 ggMMplot(df$avoidance_maneuver, df$fatal)
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Compartment Integrity Loss"}
 ggMMplot(df$compartment_integrity_loss, df$fatal)
 ```
+
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Rollover Quarter Turns"}
 ggMMplot(df$rollover_qtr_turns, df$fatal)
 ```
@@ -329,6 +340,7 @@ ggMMplot(df$rollover_qtr_turns, df$fatal)
 ## Partitioning
 
 The data were partitioned into a test and training set using a 70/30 split.
+
 ```{r}
 set.seed(1234)
 n <- nrow(df)
@@ -340,6 +352,7 @@ test <- shuffled[(round(0.7 * n) + 1):n,]
 ## Model Fitting
 
 The model was fit using a binomial logistic regression with the `glm` function in R, with `family = binomial` on the training data.
+
 ```{r}
 f <- reformulate(terms, "fatal")
 fit <- glm(f, family = binomial(link="logit"), data=train)
@@ -348,6 +361,7 @@ fit <- glm(f, family = binomial(link="logit"), data=train)
 ## Performance
 
 Probabilities for the response variable based on the test data were assigned using the `predict` function.
+
 ```{r}
 probs <- predict(fit, test, type="response")
 ```
@@ -362,6 +376,7 @@ As would be expected, the model is heavily weighted towards an occupant survivin
 
 ### Confusion Matrix
 Using a cut-off value of 0.5 for the classifier, a confusion matrix of the predicted outcomes can summarize the performance of the model.
+
 ```{r, results='asis', echo=FALSE}
 conf <- table(test$fatal, as.integer(probs > 0.5))
 conf %>% kable(caption="Confusion matrix for the classifier.")
@@ -370,6 +385,7 @@ conf %>% kable(caption="Confusion matrix for the classifier.")
 Based on the confusion matrix, this classifier appears to perform well for a dataset with this degree of class imbalance.
 
 ### Precision, Recall, and Accuracy
+
 ```{r, include=FALSE}
 TN <- conf[1, 1]; TP <- conf[2, 2]; FP <- conf[1, 2]; FN <- conf[2, 1]
 ```
@@ -391,6 +407,7 @@ The accuracy can be plotted as a function of the chosen threshold value.
 The figure below shows that the accuracy is maximized near a threshold value of 0.5, and that there is little variance in the accuracy for threshold values above 0.25.
 
 ### Accuracy vs. cut-off threshold
+
 ```{r, fig.height=3.5, fig.cap="Effect of varying cut-off threshold on model accuracy."}
 acc_at_thresh <- function(threshold) {
     conf <- table(test$fatal, probs > threshold)
@@ -403,8 +420,9 @@ ggplot() + geom_line(aes(x=threshold, y=accuracy))
 
 ### Chi-Squared
 An Chi-Squared analysis of the predictor variables in the model is found below.
+
 ```{r}
-#anova(fit, test="Chisq")
+anova(fit, test="Chisq")
 ```
 
 ### ROC curve and AUC
@@ -415,6 +433,7 @@ The ROC curve provides the performance that the model can achieve by varying the
 In particular, it shows that if a higher true positive rate (TPR) is required of the model, it will lead to a higher false positive rate (FPR).
 
 ```{r, fig.height=4.5, fig.cap="ROC curve for the classifier."}
+# ROC curve
 pred <- prediction(probs, test$fatal)
 plot(performance(pred, "tpr", "fpr"))
 ```
@@ -446,6 +465,7 @@ A canonical example of this is the case of cancer screening, where the base-rate
 The RP curve is sensitive to the response class base-rate, with the effect being that the area under the RP curve tends to decrease with greater imbalance in the response classes.
 
 The area under the RP curve for this model is shown below.
+
 ```{r}
 RP.perf@y.values[[1]][is.nan(RP.perf@y.values[[1]])] <- 1 # Remove single NaN
 caTools::trapz(x=RP.perf@x.values[[1]], y=RP.perf@y.values[[1]])
@@ -476,11 +496,13 @@ for (configuration in configurations) {
     )
 }
 ```
+
 ```{r figccroc, echo=FALSE, fig.height=3.5, fig.cap="ROC curves for various crash configurations within the test set."}
 dat %>%
     filter(type == 'roc') %>%
     ggplot(aes(group=config, colour=config)) + geom_line(aes(x=x, y=y))
 ```
+
 ```{r figccrp, echo=FALSE, warning=FALSE, fig.height=3.5, fig.cap="RP curves for various crash configurations within the test set."}
 dat %>%
     filter(type == 'rp') %>%
