@@ -1,7 +1,7 @@
 ---
 title: 'Vehicle Crash Survivability'
 author: "Glen Myrland (500730397)"
-date: '`r Sys.Date()`'
+date: '2016-04-04'
 output:
     pdf_document:
         fig_caption: yes
@@ -53,7 +53,7 @@ driver-related factors such as age, gender, alcohol level, and number of people 
 
 [2] Indiana University. (2014). Car crash survival rates increase with being younger, male and driving a big vehicle. Accessed from http://www.eurekalert.org/pub_releases/2014-11/iu-ccs111814.php
 
-[3] Frampton, R., Page, M., & Thomas, P. (2006). Factors Related to Fatal Injury in Frontal Crashes Involving European Cars. Annual Proceedings / Association for the Advancement of Automotive Medicine, 50, 35–56. 
+[3] Frampton, R., Page, M., & Thomas, P. (2006). Factors Related to Fatal Injury in Frontal Crashes Involving European Cars. Annual Proceedings / Association for the Advancement of Automotive Medicine, 50, 35-56. 
 
 [4] Kirbiyik, U., Dixon, B., & Zollinger, T.W. (2014). Factors affecting survival in head-on vehicle collisions. 142nd APHA Annual Meeting and Exposition 2014. Accessed from https://www.researchgate.net/publication/266775960_Factors_affecting_survival_in_head-on_vehicle_collisions
 
@@ -86,7 +86,8 @@ library(DBI)
 library(RSQLite)
 library(knitr)
 library(ggplot2)
-setwd('~/source/nass')
+#setwd('~/source/nass')
+setwd('C:/Users/Gmyrland/source/nass')
 load('data/df.Rdata')
 
 # character version
@@ -127,10 +128,11 @@ graph <-
   add_node(label="  1. Collect case ids  ") %>%
   add_node(label="  2. Web-scraping  ", from=1) %>%
   add_node(label="  3. Parse XML  ", from=2) %>%
-  add_node(label="  4. Data Cleaning  ", from=3) %>%
-  add_node(label="  5. Exploratory Analysis  ", from=4) %>%
+  add_node(label="  4. Form Single Dataset for Machine Learning  ", from=3) %>%
+  add_node(label="  5. Data Cleaning  ", from=4) %>%
   add_node(label="  6. Feature Engineering  ", from=5) %>%
-  add_node(label="  7. Regression Analysis  ", from=6) %>%
+  add_node(label="  7. Exploratory Analysis  ", from=6) %>%
+  add_node(label="  8. Regression Analysis  ", from=7) %>%
   select_nodes() %>%  
   set_node_attr_with_selection("shape", "box") %>%
   set_node_attr_with_selection("type", "box") %>%
@@ -142,7 +144,8 @@ render_graph(graph)
 ## graph produced saved using RStudio as approach.png
 ```
 The approach to be taken is shown in the graph below, and is described in the following subsections.
-![graph](approach.png)
+
+![Box Diagram of approach taken](approach.png)
 
 ## Step 1: Compile complete list of case ids
 <!--
@@ -192,12 +195,12 @@ However, the mortality was not known for all occupants, so the dataset was filte
 
 ## Step 5: Data Cleaning
 
-The data collected is real world data and contains missing values.
+The data collected is real world data and contained missing values.
 The missing values were encoded in a number of different ways, such as 'Unknown', 'N/A', 'Not Reported', or ''.
 These values were all coerced to `NA` in R.
 
 Furthermore, the data has been collected over time, the XML schema has changed yearly.
-Coding and Analytical Manuals for the data are located [here](http://www-nrd.nhtsa.dot.gov/cats/listpublications.aspx?Id=l&ShowBy=DocType), and were referred to while reconciling the data to a consistent schema.
+Coding and Analytical Manuals for the data are located [here](http://www-nrd.nhtsa.dot.gov/cats/listpublications.aspx?Id=l&ShowBy=DocType), and were referred to while reconciling the data to a more consistent schema.
 
 Some attributes were scaled based on unit of measurement attributes.
 For example, ages reported in either months or years in the original data were converted to strictly years in the clean dataset.
@@ -205,17 +208,17 @@ For example, ages reported in either months or years in the original data were c
 Attributes with very few values were removed from the dataset.
 The response variable was converted to an integer value with 0 representing Non-Fatal and 1 representing Fatal.
 
-Unknown values for text attributes was then converted to the string 'Unknown' as there were considerable `NA` values in the dataset.
-The number of unique text values was reduced by combining similar fields, or by coercing very infrequent values to 'Unknown'.
-All text values were then coerced to factor variables in R.
+Unknown values for text attributes was then converted to the string 'Unknown' in order to include unknown values in the regression, as there were considerable `NA` values in the dataset.
+All text values were coerced to factor variables in R.
 
 Numeric values were scaled, and missing values were imputed using the median value.
 
 ## Step 6: Feature Engineering
 
 Several additional attributes were derived from the data, including `is_weekend`, a binary feature indicating whether the crash occurred on the weekend.
+The number of unique text values was reduced by combining similar fields, or by coercing very infrequent values to 'Unknown' in order to reduce the degrees of freedom.
 
-## Step 6: Exploratory Analysis
+## Step 7: Exploratory Analysis
 
 Once the data was cleaned, exploratory analysis was performed.
 This included searching for existing correlations in the data, and identifying attributes that would likely be useful in the regression analysis.
@@ -238,7 +241,9 @@ The outcome was validated by performing the same regression on all attributes in
 library(ROCR)
 ```
 
-The data from the cleaned dataset was explored using the StepAIC function in R to determine reasonable candidate features for the model.
+The data from the cleaned dataset was explored using basic R functions as well as the StepAIC function in R to determine reasonable candidate features for the model.
+The cleaned dataset contains 83 potential predictors.
+However, only 20 were used to reduce computation.
 
 ## Features Used
 
@@ -247,8 +252,6 @@ The chosen features are summarized in the table below.
 ```{r, echo=FALSE, result='asis'}
 # thes ones work
 #terms <- c('crash_config', 'eyewear', 'race', 'age', 'airbag_deployment', 'posture', 'seatbelt_used', 'entrapment', 'event_class', 'damage_plane', 'alcohol_test', 'alcohol_present', 'roadway_alignment', 'posted_speed', 'driver_race', 'compartment_integrity_loss', 'avoidance_maneuver', 'preimpact_location', 'fire', 'drive_Wheels')
-
-terms <- c('compartment_integrity_loss', 'alcohol_test', 'posture', 'seatbelt_used', 'avoidance_maneuver', 'event_class', 'contacted_class', 'alcohol_present', 'contacted_area', 'crash_config', 'preimpact_location', 'contacted', 'entrapment', 'precrash_category', 'preimpact_stability', 'crash_type', 'vehicles_involved', 'alcohol_test_result', 'preevent_movement', 'damage_area')
 
 terms <- c("compartment_integrity_loss", "alcohol_test", "posture", "age", "entrapment",
                 "seatbelt_used", "race", "alcohol_present", "avoidance_maneuver", "damage_plane",
@@ -263,7 +266,9 @@ dff[terms] %>%
     )} %>% kable(caption='Class and count of unique values for each attribute.', row.names=FALSE)
 ```
 
-The values taken by the chosen factor variables used are shown below.
+Several of the features are scaled double floating point vectors.
+The remaining features are factor variables.
+A summary of the factor levels is shown in the table below.
 
 ```{r, echo=FALSE, result='asis'}
 chr_terms <- terms[terms %in% names(dff[sapply(dff, is.character)])]
@@ -276,8 +281,8 @@ dff[chr_terms] %>%
     )} %>% kable(caption='Class and count of unique values for each attribute.', row.names=FALSE)
 ```
 
-The relationship between several key features are shown in the following plots.
-Mosaic plots are used for categorical attributes, and violin plots are used for numerical attributes.
+The relationships between several key features are shown in the following plots.
+Mosaic plots are used to show relationships for categorical attributes, and violin plots are used for numerical attributes.
 
 ```{r, echo=FALSE}
 ggMMplot <- function(var1, var2){
@@ -321,20 +326,8 @@ ggMMplot(df$entrapment, df$fatal)
 ggMMplot(df$alcohol_present, df$fatal)
 ```
 
-```{r, echo=FALSE, fig.height=2.5, fig.cap="Roadway Alignment"}
-ggMMplot(df$roadway_alignment, df$fatal)
-```
-
 ```{r, echo=FALSE, fig.height=2.5, fig.cap="Avoidance Maneuver"}
 ggMMplot(df$avoidance_maneuver, df$fatal)
-```
-
-```{r, echo=FALSE, fig.height=2.5, fig.cap="Compartment Integrity Loss"}
-ggMMplot(df$compartment_integrity_loss, df$fatal)
-```
-
-```{r, echo=FALSE, fig.height=2.5, fig.cap="Rollover Quarter Turns"}
-ggMMplot(df$rollover_qtr_turns, df$fatal)
 ```
 
 ## Partitioning
@@ -366,9 +359,9 @@ Probabilities for the response variable based on the test data were assigned usi
 probs <- predict(fit, test, type="response")
 ```
 
-This allows us to see the distribution of the predicted response variables.
+This allows us to see the distribution of the predicted response variables, shown in the following historgram.
 
-```{r echo=FALSE, fig.height=4, fig.cap="Histogram of predicted probabilities"}
+```{r echo=FALSE, fig.height=4.15, fig.cap="Histogram of predicted probabilities"}
 hist(probs)
 ```
 
@@ -383,6 +376,7 @@ conf %>% kable(caption="Confusion matrix for the classifier.")
 ```
 
 Based on the confusion matrix, this classifier appears to perform well for a dataset with this degree of class imbalance.
+\newpage
 
 ### Precision, Recall, and Accuracy
 
@@ -402,13 +396,14 @@ For this model, this gives a value of `r round(TP/(TP+FN),2)`.
 
 Accuracy is a measure of the proportion of records correctly classified, and is given by `(TP+TN)/(TP+FP+TN+FN)`
 For this model, the accuracy is `r round((TP+TN)/(TP+FP+TN+FN),2)`.
+\clearpage
+
+### Accuracy vs. cut-off threshold
 
 The accuracy can be plotted as a function of the chosen threshold value.
 The figure below shows that the accuracy is maximized near a threshold value of 0.5, and that there is little variance in the accuracy for threshold values above 0.25.
 
-### Accuracy vs. cut-off threshold
-
-```{r, fig.height=3.5, fig.cap="Effect of varying cut-off threshold on model accuracy."}
+```{r, fig.height=4, fig.cap="Effect of varying cut-off threshold on model accuracy."}
 acc_at_thresh <- function(threshold) {
     conf <- table(test$fatal, probs > threshold)
     sum(diag(conf))/sum(conf)
@@ -418,22 +413,14 @@ accuracy <- sapply(threshold, acc_at_thresh)
 ggplot() + geom_line(aes(x=threshold, y=accuracy))
 ```
 
-### Chi-Squared
-An Chi-Squared analysis of the predictor variables in the model is found below.
-
-```{r}
-anova(fit, test="Chisq")
-```
-
 ### ROC curve and AUC
 
 A good way to review model performance of a binary classifier is to generate a Receiver Operating Characteristic (ROC) curve.
 
 The ROC curve provides the performance that the model can achieve by varying the cut-off threshold used, and illustrates the trade-off of doing so.
-In particular, it shows that if a higher true positive rate (TPR) is required of the model, it will lead to a higher false positive rate (FPR).
+In particular, it shows that if a higher true positive rate (TPR) is demanded of the model, it will lead to a higher false positive rate (FPR).
 
-```{r, fig.height=4.5, fig.cap="ROC curve for the classifier."}
-# ROC curve
+```{r, fig.height=7, fig.width=7, fig.cap="ROC curve for the classifier."}
 pred <- prediction(probs, test$fatal)
 plot(performance(pred, "tpr", "fpr"))
 ```
@@ -443,19 +430,17 @@ An AUC of 0.5 indicates that the model is no better than random chance.
 On the other hand, an AUC of 1.0 indicates that the model perfectly explains the response within the test set.
 
 In this case, the AUC is `r round(performance(pred, "auc")@y.values[[1]],3)`.
-
 This is a good AUC for a machine learning model in general, however, the ROC curve is not particularly well suited to data with large class imbalances, since it is not sensitive to the base-rate of the predicted classes.
 
 ### Recall-Precision Curve and AUC
 
-Another performance metric, the recall-precision (RP) curve, can be used to examine the model's response.
+Another method of gauging model performance is the recall-precision (RP) curve.
 Similar to the ROC curve, the recall-precision curve shows the effect on model performance as the cut-off threshold varies.
 As stated previously, the precision is the how likely a predicted positive outcome is correct, and recall is how likely the model correctly identifies a positive outcome.
 
-```{r, fig.height=4.5, fig.cap="RP curve for the clasifier."}
-# Recall-Precision curve             
+```{r, fig.height=5.25, fig.width=5.25, fig.cap="RP curve for the clasifier."}
 RP.perf <- performance(pred, "prec", "rec")
-plot (RP.perf)
+plot (RP.perf, asp=1)
 ```
 
 Here we can see the effect of the class imbalance.
@@ -476,6 +461,8 @@ While the area under the ROC curve and the area under the RP curve cannot be dir
 ## Performance by Crash Configuration
 
 The following figures show the performance of the generalized classifier for various crash configurations.
+
+The classifier appears to do a reasonable job of classifying the survivability of all crash configurations, although classification in crashes involving rollover performs noticeably poorer than the other configurations.
 
 ```{r, include=FALSE}
 f <- reformulate(terms[!terms == "crash_config"], response = "fatal")
@@ -509,8 +496,6 @@ dat %>%
     ggplot(aes(group=config, colour=config)) + geom_line(aes(x=x, y=y))
 ```
 
-The classifier appears to do a reasonable job of classifying the survivability of all crash configurations, although classification in crashes involving rollover performs noticeably poorer than the other configurations.
-
 ## Amazon Web Services
 
 To validate the findings, Amazon Web Service's cloud based Machine Learning was used to build an additional binary classification model with the entire cleaned dataset, again partitioning a training and test set using a 70/30 split.
@@ -523,26 +508,29 @@ The confusion matrix for the model is shown in the table below.
 0  23866 141
 1    677 306
 
+Table: Resulting confusion matrix form AWS Machine Learning.
+
 The precision was reported as 0.6846, the recall as 0.3133, and the accuracy as 0.9673.
 These values are all similar to the values of the model developed in R using only the 20 selected attributes.
+\newpage
 
 # Conclusions
 <!--
     Give a short summary (one or two paragraphs) of your analysis and conclude the discussion by defining
     the usefulness of your analysis.
 -->
-The 
-- accuracy, etc
-- which features were most imporatant
-- comments on consistency with lit review
-  -age?, sex?, seatbelt, airbag deployment, vehicle age, speed?, alcohol level, number of people in vehicle
-20 attributes out of over 700 available
-AUC
-RP curve AUC
-similarity to AWS
 
-caption all figures and tables
-add appropriate headings
-make sure spaces are good
-add back anova
+Overall, the binary classifier performed well, with an accuracy of 97%.
+This is largely due to prevalence of a single class (Non-fatal), however, the model outperforms the naive approach of classifying every response as Non-fatal, which would have an accuracy of only 96.3%.
+The model predicts 35% of fatal outcomes correctly, and 62% of cases classified as fatal are indeed fatal.
 
+The model had a very high area under the ROC curve of 0.955.
+Typically, this is considered very good performance for a binary classifier.
+However, the class imbalance in the response variable manifested itself in a lower area under the RP curve than would be ideal, of 0.496.
+
+There was some agreement on the features indentified in the literature review.
+In particular, the presence of alcohol played an important role in the classifier.
+Age, sex, seatbelt use, and airbag deployement were also important features.
+However, some features identified in the literature review such as the number of people in the vehicle did not appear to play a major role.
+
+Replicating the analysis in AWS for all features of the cleaned dataset showed additional features beyond the 20 chosen did not add substantial value, however, additional feature engineering might result in improved model performance.
