@@ -42,11 +42,23 @@ fit <- glm(fatal ~ crash_config + eyewear + race + age + airbag_deployment + pos
 
 #auc
 probs <- predict(fit, test, type="response")
+table(test$fatal, probs > 0.5) #confusion matrix
 pred <- prediction(probs, test$fatal)
 plot(performance(pred, "tpr", "fpr")) # ROC Curve
 #performance(pred, "auc", "fpr")@y.values[[1]] #AUC
 performance(pred, "auc")@y.values[[1]]
 table(test$fatal, pred@predictions[[1]] > 0.5)
+confint(fit)
+coef(fit)
+plot(residuals(fit, type="deviance"))
+
+# Recall-Precision curve             
+RP.perf <- performance(pred, "prec", "rec");
+plot (RP.perf);
+head(RP.perf@y.values[[1]])
+RP.perf@y.values[[1]][is.nan(RP.perf@y.values[[1]])] <- 1
+caTools::trapz(x=RP.perf@x.values[[1]], y=RP.perf@y.values[[1]])
+PerfMeas::AUPRC(performance(pred, "prec", "rec"))
 
 ####################
 ## Logistic Regression
@@ -145,7 +157,7 @@ plot(prf)
 ############
 ## Stepwise
 
-full <- lm(fatal ~ age + height + weight + factor(sex) + factor(role), data=df)
+full <- lm(fatal ~ height + age + weight + factor(sex) + factor(role), data=df)
 null <- lm(fatal ~ 1, data=df)
 stepAIC(null, scope=list(lower=null, upper=full), direction="forward", trace=FALSE)
 stepAIC(full, direction="backward", trace=FALSE)
@@ -159,7 +171,7 @@ summary(lm(fatal ~ height, data=dfcc))$adj.r.squared
 ##############
 ## Best Subset
 dff <- df[sample(nrow(df), 1000), ]
-f <- reformulate(names(df)[!names(df) %in% c('CaseId', 'CaseWeight', 'model', 'fatal')], 'fatal')
+f <- frm(names(df))
 summary(regsubsets(f, data=dff, nbest=1, nvmax=2, really.big=T))$outmat %>% as.data.frame
 
 ################################
