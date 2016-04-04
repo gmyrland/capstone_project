@@ -54,7 +54,7 @@ ui <- fluidPage(
 
 ## Shiny Server
 server <- function(input, output, session) {
-    session$onSessionEnded(function() stopApp(returnValue=NULL))
+    #session$onSessionEnded(function() stopApp(returnValue=NULL))
     vals <- reactive({
         f <- reformulate(input$select, "fatal")
         var <- as.character(input$select)
