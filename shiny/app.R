@@ -4,6 +4,16 @@ library(ggplot2)
 library(ROCR)
 
 load(url('http://gmyrland.capstone.s3.amazonaws.com/df.Rdata'))
+
+# some last minute tweaks
+df$child_seat_present <- as.factor(df$child_seat_present)
+df$displacement[df$displacement < 0] <- 0
+df$fire <- as.factor(df$fire)
+df$is_weeked <- as.factor(df$is_weeked)
+df$special_use <- as.factor(df$special_use)
+df$travel_lanes <- as.factor(df$travel_lanes)
+df$vehicle_year[df$vehicle_year < 0] <- 0
+
 set.seed(1234)
 n <- nrow(df)
 shuffled <- df[sample(n),]
@@ -42,13 +52,15 @@ ui <- fluidPage(
     hr(),
     column(12, align="center",
         ## mosiac / violin
-        plotOutput("correlation", height=200),
+        plotOutput("correlation", height=300),
         ## confusion matrix
         #tableOutput('conf'),
-        ## roc
-        plotOutput("roc", height=300, width=400),
-        ## rp
-        plotOutput("rp", height=300, width=400)
+        fluidRow(
+            ## roc
+            column(6, plotOutput("roc", height=400, width=500), "ROC Curve"),
+            ## rp
+            column(6, plotOutput("rp", height=400, width=500), "Recall-Precision Curve")
+        )
     )
 )
 
